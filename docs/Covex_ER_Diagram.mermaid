@@ -1,0 +1,416 @@
+erDiagram
+    %% ============================================
+    %% Covex 全局域关系总览
+    %% ============================================
+
+    %% ---- 产品配置域 ----
+    ins_product {
+        bigint id PK
+        bigint tenant_id
+        varchar product_code UK
+        varchar version
+        varchar product_name
+        tinyint product_type
+        tinyint status
+        json capabilities
+        json attributes
+    }
+
+    ins_product_coverage {
+        bigint id PK
+        bigint product_id FK
+        varchar coverage_code
+        varchar coverage_name
+        tinyint benefit_type
+        json coverage_detail
+    }
+
+    ins_product_premium {
+        bigint id PK
+        bigint product_id FK
+        varchar premium_plan_code
+        tinyint payment_frequency
+        json premium_detail
+    }
+
+    ins_coverage_premium_rel {
+        bigint id PK
+        bigint coverage_id FK
+        bigint premium_id FK
+    }
+
+    ins_product_rule {
+        bigint id PK
+        bigint product_id FK
+        bigint coverage_id FK
+        varchar rule_engine
+        varchar rule_code
+        tinyint rule_type
+    }
+
+    ins_product_rider_rel {
+        bigint id PK
+        varchar main_product_code
+        varchar rider_product_code
+    }
+
+    ins_product_document {
+        bigint id PK
+        bigint product_id FK
+        tinyint document_type
+        varchar file_url
+    }
+
+    ins_product_changelog {
+        bigint id PK
+        bigint product_id FK
+        tinyint change_type
+        text old_value
+        text new_value
+    }
+
+    ins_rate_table {
+        bigint id PK
+        bigint product_id FK
+        varchar rate_table_code
+        varchar version
+        json table_schema
+    }
+
+    ins_rate_table_row {
+        bigint id PK
+        bigint rate_table_id FK
+        varchar dimension_key
+        decimal rate_value
+    }
+
+    ins_dict {
+        bigint id PK
+        varchar dict_type
+        varchar dict_code
+        varchar dict_name
+        varchar parent_code
+    }
+
+    %% ---- 渠道域 ----
+    ins_channel {
+        bigint id PK
+        bigint tenant_id
+        varchar channel_code UK
+        varchar channel_name
+        tinyint channel_type
+        tinyint status
+    }
+
+    ins_channel_product {
+        bigint id PK
+        bigint channel_id FK
+        bigint product_id FK
+        decimal first_year_rate
+        decimal renewal_rate
+    }
+
+    ins_channel_user {
+        bigint id PK
+        bigint channel_id FK
+        varchar username UK
+        varchar real_name
+    }
+
+    ins_commission {
+        bigint id PK
+        bigint channel_id FK
+        bigint policy_id FK
+        tinyint commission_type
+        decimal commission_amount
+    }
+
+    %% ---- 客户域 ----
+    ins_customer {
+        bigint id PK
+        bigint tenant_id
+        varchar customer_code UK
+        varchar customer_name
+        tinyint id_type
+        varchar id_no
+    }
+
+    ins_customer_applicant {
+        bigint id PK
+        bigint customer_id FK
+        decimal annual_income
+        tinyint marital_status
+        tinyint has_social_security
+    }
+
+    ins_customer_insured {
+        bigint id PK
+        bigint customer_id FK
+        varchar occupation
+        tinyint occupation_risk_level
+        tinyint smoking_status
+        json medical_history
+    }
+
+    ins_customer_bank_account {
+        bigint id PK
+        bigint customer_id FK
+        varchar account_holder
+        varchar bank_name
+        varchar account_no
+        tinyint usage_type
+        tinyint is_default
+    }
+
+    ins_customer_address {
+        bigint id PK
+        bigint customer_id FK
+        tinyint address_type
+        varchar province
+        varchar city
+        varchar detail
+    }
+
+    %% ---- 承保域 ----
+    ins_proposal {
+        bigint id PK
+        varchar proposal_no UK
+        bigint product_id FK
+        bigint channel_id FK
+        bigint applicant_id FK
+        bigint insured_id FK
+        tinyint status
+        decimal total_premium
+    }
+
+    ins_underwriting_record {
+        bigint id PK
+        bigint proposal_id FK
+        tinyint uw_type
+        tinyint uw_result
+    }
+
+    ins_policy {
+        bigint id PK
+        varchar policy_no UK
+        bigint proposal_id FK
+        bigint product_id FK
+        bigint applicant_id FK
+        bigint insured_id FK
+        date effective_date
+        tinyint status
+    }
+
+    ins_policy_coverage {
+        bigint id PK
+        bigint policy_id FK
+        varchar coverage_code
+        decimal sum_insured
+        decimal premium
+    }
+
+    ins_policy_premium {
+        bigint id PK
+        bigint policy_id FK
+        varchar premium_plan_code
+        tinyint payment_frequency
+        decimal period_premium
+    }
+
+    ins_payment {
+        bigint id PK
+        varchar payment_no UK
+        bigint policy_id FK
+        tinyint payment_type
+        decimal amount
+        tinyint status
+    }
+
+    %% ---- 保单服务域 ----
+    ins_renewal_bill {
+        bigint id PK
+        bigint policy_id FK
+        smallint period_no
+        date due_date
+        decimal amount
+        tinyint status
+    }
+
+    ins_endorsement {
+        bigint id PK
+        bigint policy_id FK
+        tinyint endorsement_type
+        tinyint status
+    }
+
+    ins_endorsement_change {
+        bigint id PK
+        bigint endorsement_id FK
+        varchar change_field
+        text old_value
+        text new_value
+    }
+
+    ins_policy_loan {
+        bigint id PK
+        bigint policy_id FK
+        decimal loan_amount
+        decimal interest_rate
+    }
+
+    %% ---- 理赔域 ----
+    ins_claim {
+        bigint id PK
+        varchar claim_no UK
+        bigint policy_id FK
+        bigint coverage_id FK
+        date accident_date
+        decimal claim_amount
+        tinyint status
+    }
+
+    ins_claim_document {
+        bigint id PK
+        bigint claim_id FK
+        tinyint document_type
+        varchar file_url
+    }
+
+    ins_claim_review {
+        bigint id PK
+        bigint claim_id FK
+        tinyint review_result
+        decimal approved_amount
+    }
+
+    ins_claim_payment {
+        bigint id PK
+        bigint claim_id FK
+        bigint payment_id FK
+        decimal amount
+    }
+
+    %% ---- 基础服务层 ----
+    ins_user {
+        bigint id PK
+        varchar username UK
+        varchar real_name
+        tinyint user_type
+    }
+
+    ins_role {
+        bigint id PK
+        varchar role_code UK
+        varchar role_name
+    }
+
+    ins_permission {
+        bigint id PK
+        varchar permission_code UK
+        varchar module
+        varchar action
+    }
+
+    ins_user_role {
+        bigint id PK
+        bigint user_id FK
+        bigint role_id FK
+    }
+
+    ins_role_permission {
+        bigint id PK
+        bigint role_id FK
+        bigint permission_id FK
+    }
+
+    ins_data_scope {
+        bigint id PK
+        bigint role_id FK
+        tinyint scope_type
+        varchar scope_value
+    }
+
+    %% ============================================
+    %% 产品配置域 内部关系
+    %% ============================================
+    ins_product ||--o{ ins_product_coverage : "定义保障"
+    ins_product ||--o{ ins_product_premium : "定义缴费"
+    ins_product ||--o{ ins_product_rule : "引用规则"
+    ins_product ||--o{ ins_product_document : "关联文档"
+    ins_product ||--o{ ins_product_changelog : "变更记录"
+    ins_product ||--o{ ins_rate_table : "费率表"
+    ins_product ||--o{ ins_product_rider_rel : "主险"
+
+    ins_product_coverage ||--o{ ins_coverage_premium_rel : "关联缴费"
+    ins_product_premium ||--o{ ins_coverage_premium_rel : "关联责任"
+    ins_product_coverage ||--o{ ins_product_rule : "责任级规则"
+
+    ins_rate_table ||--o{ ins_rate_table_row : "行数据"
+
+    %% ============================================
+    %% 渠道域 关系
+    %% ============================================
+    ins_channel ||--o{ ins_channel_product : "授权产品"
+    ins_channel ||--o{ ins_channel_user : "渠道账号"
+    ins_channel ||--o{ ins_commission : "佣金"
+
+    ins_channel_product }o--|| ins_product : "可售产品"
+
+    %% ============================================
+    %% 客户域 内部关系
+    %% ============================================
+    ins_customer ||--o| ins_customer_applicant : "投保人扩展"
+    ins_customer ||--o| ins_customer_insured : "被保人扩展"
+    ins_customer ||--o{ ins_customer_bank_account : "银行账户"
+    ins_customer ||--o{ ins_customer_address : "联系地址"
+
+    %% ============================================
+    %% 客户 → 承保 关系
+    %% ============================================
+    ins_customer ||--o{ ins_proposal : "作为投保人"
+    ins_customer ||--o{ ins_proposal : "作为被保人"
+    ins_customer ||--o{ ins_claim : "作为报案人"
+
+    %% ============================================
+    %% 承保域 内部关系
+    %% ============================================
+    ins_proposal ||--o{ ins_underwriting_record : "核保记录"
+    ins_proposal ||--|| ins_policy : "生成保单"
+
+    ins_policy ||--o{ ins_policy_coverage : "险种明细"
+    ins_policy ||--o{ ins_policy_premium : "缴费计划"
+    ins_policy ||--o{ ins_payment : "支付记录"
+
+    %% ============================================
+    %% 保单服务域 关系
+    %% ============================================
+    ins_policy ||--o{ ins_renewal_bill : "续期账单"
+    ins_policy ||--o{ ins_endorsement : "保全申请"
+    ins_policy ||--o{ ins_policy_loan : "保单借款"
+
+    ins_endorsement ||--o{ ins_endorsement_change : "变更明细"
+
+    %% ============================================
+    %% 理赔域 关系
+    %% ============================================
+    ins_policy ||--o{ ins_claim : "理赔案件"
+    ins_claim ||--o{ ins_claim_document : "理赔材料"
+    ins_claim ||--o{ ins_claim_review : "审核记录"
+    ins_claim ||--o{ ins_claim_payment : "赔付记录"
+
+    ins_claim_payment }o--|| ins_payment : "支付"
+
+    %% ============================================
+    %% 佣金 跨域关系
+    %% ============================================
+    ins_commission }o--|| ins_policy : "关联保单"
+    ins_commission }o--|| ins_channel_user : "销售人员"
+
+    %% ============================================
+    %% 基础服务层 关系
+    %% ============================================
+    ins_user ||--o{ ins_user_role : "拥有角色"
+    ins_role ||--o{ ins_user_role : "分配给用户"
+    ins_role ||--o{ ins_role_permission : "拥有权限"
+    ins_permission ||--o{ ins_role_permission : "分配给角色"
+    ins_role ||--o{ ins_data_scope : "数据范围"

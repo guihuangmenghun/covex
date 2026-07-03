@@ -1,0 +1,112 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: covex
+
+  # MySQL
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/covex?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Hong_Kong&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD:guihuang50}
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      stat-view-servlet:
+        enabled: true
+        login-username: ${DRUID_USERNAME:admin}
+        login-password: ${DRUID_PASSWORD:covex2026}
+      filter:
+        stat:
+          enabled: true
+          slow-sql-millis: 2000
+        wall:
+          enabled: true
+
+  # Redis
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: ${REDIS_PASSWORD:5d41402abc4b2a76b9719d911017c592}
+      database: 0
+      timeout: 5000
+
+  # RocketMQ
+  # Note: NameServer not running yet, will configure when available
+  # rocketmq:
+  #   name-server: 127.0.0.1:9876
+  #   producer:
+  #     group: covex-producer-group
+
+  # Jackson
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Hong_Kong
+    serialization:
+      write-dates-as-timestamps: false
+
+# MyBatis-Plus
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      table-prefix: ""
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# SpringDoc OpenAPI
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  group-configs:
+    - group: covex
+      paths-to-match: /api/**
+
+# LiteFlow
+liteflow:
+  print-execution-log: true
+  rule-source: classpath:liteflow/flow.el.xml
+
+# Sentinel
+spring.cloud.sentinel:
+  enabled: false  # Enable when dashboard is available
+
+# Scheduling
+covex:
+  aes:
+    key: ${COVEX_AES_KEY:Covex2026AesKey!}
+  jwt:
+    secret: ${COVEX_JWT_SECRET:CovexJwtSecretKey2026ForInsurancePlatform}
+    expiration: 86400000  # 24 hours
+  scheduling:
+    pool-size: 10
+    thread-name-prefix: covex-sched-
+
+# Logging
+logging:
+  config: classpath:log4j2-spring.xml
+
+# Management (Micrometer)
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

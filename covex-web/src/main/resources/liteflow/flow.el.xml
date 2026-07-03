@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow>
+    <!-- 投保校验链：按顺序执行 -->
+    <chain name="validateChain">
+        THEN(validateAge, validateId, validateAmount, validateRider, validateChannel);
+    </chain>
+
+    <!-- 核保链：独立规则可并行执行 -->
+    <chain name="underwriteChain">
+        WHEN(uwHealth, uwOccupation, uwCumulativeAmount);
+    </chain>
+
+    <!-- 出单链：按顺序执行 -->
+    <chain name="issueChain">
+        THEN(issueCreatePolicy, issueCreateCoverage, issueCreatePremium, issueNotify);
+    </chain>
+
+    <!-- 理赔校验链：按顺序执行 -->
+    <chain name="claimValidateChain">
+        THEN(claimValidatePolicy, claimValidateCoverage, claimValidateWaitingPeriod, claimValidateCoverageMatch);
+    </chain>
+
+    <!-- 理赔赔付计算链 -->
+    <chain name="claimCalculationChain">
+        THEN(claimCalculation);
+    </chain>
+</flow>
