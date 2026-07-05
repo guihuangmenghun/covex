@@ -8,8 +8,13 @@ import com.covex.service.entity.PaymentEntity;
 import com.covex.service.entity.ProposalEntity;
 import com.covex.service.mapper.PaymentMapper;
 import com.covex.service.mapper.ProposalMapper;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 支付服务
@@ -26,24 +31,32 @@ import java.util.concurrent.atomic.AtomicLong;
 public class PaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
-    private static final AtomicLong PAYMENT_SEQ = new AtomicLong(1);
 
     private final PaymentMapper paymentMapper;
     private final ProposalMapper proposalMapper;
     private final PolicyService policyService;
+    private final RocketMQTemplate rocketMQTemplate;
+    private final StringRedisTemplate redisTemplate;
+    private final RedissonClient redissonClient;
 
     public PaymentService(PaymentMapper paymentMapper,
                           ProposalMapper proposalMapper,
-                          PolicyService policyService) {
+                          PolicyService policyService,
+                          RocketMQTemplate rocketMQTemplate,
+                          StringRedisTemplate redisTemplate,
+                          RedissonClient redissonClient) {
         this.paymentMapper = paymentMapper;
         this.proposalMapper = proposalMapper;
         this.policyService = policyService;
+        this.rocketMQTemplate = rocketMQTemplate;
+        this.redisTemplate = redisTemplate;
+        this.redissonClient = redissonClient;
     }
 
     /**
-     * 创建支付记录（Mock 支付通道）
+     * 创建支付记录 + 发送 30 分钟延迟消息用于超时自动撤销
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public PaymentEntity createPayment(CreatePaymentDTO dto) {
         ProposalEntity proposal = proposalMapper.selectById(dto.getProposalId());
         if (proposal == null) {
@@ -64,19 +77,45 @@ public class PaymentService {
 
         payment.setOperator(com.covex.common.util.OperatorContext.getCurrentOperator());
         paymentMapper.insert(payment);
-        log.info("Payment created: paymentNo={}, amount={}, channel={}",
+
+        // 发送 30 分钟延迟消息用于支付超时自动撤销
+        String mqMessage = String.format("paymentId=%d, proposalId=%d", payment.getId(), proposal.getId());
+        rocketMQTemplate.syncSend("PAYMENT_TIMEOUT",
+                MessageBuilder.withPayload(mqMessage).build(),
+                3000, // 发送超时 3s
+                16);  // delayLevel 16 = 30 分钟（RocketMQ 默认延迟级别）
+        log.info("Payment created and timeout MQ sent: paymentNo={}, amount={}, channel={}",
                 payment.getPaymentNo(), payment.getAmount(), dto.getPayChannel());
         return payment;
     }
 
     /**
-     * 支付回调处理
+     * 支付回调处理（Redisson 分布式锁防重复回调）
      * - 幂等（payment_no 去重）
      * - 金额校验（不匹配→status=4 挂起）
      * - 更新状态→触发后续流程
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public PaymentEntity handlePaymentCallback(PaymentCallbackDTO dto) {
+        RLock lock = redissonClient.getLock("lock:payment:callback:" + dto.getPaymentNo());
+        try {
+            if (!lock.tryLock(5, 10, TimeUnit.SECONDS)) {
+                throw new BizException("支付回调处理中，请稍后重试");
+            }
+            try {
+                return doHandlePaymentCallback(dto);
+            } finally {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BizException("支付回调处理被中断");
+        }
+    }
+
+    private PaymentEntity doHandlePaymentCallback(PaymentCallbackDTO dto) {
         // 查找支付记录
         LambdaQueryWrapper<PaymentEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PaymentEntity::getPaymentNo, dto.getPaymentNo());
@@ -134,7 +173,7 @@ public class PaymentService {
      * 定时任务：扫描超时投保单 → 自动撤销
      * 超过30分钟未支付的投保单自动撤销
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public int handlePaymentTimeout() {
         LocalDateTime threshold = LocalDateTime.now().minusMinutes(30);
 
@@ -157,7 +196,8 @@ public class PaymentService {
 
     private String generatePaymentNo(Long tenantId) {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        long seq = System.nanoTime() % 1000000;
+        String redisKey = "payment_no:" + dateStr;
+        Long seq = redisTemplate.opsForValue().increment(redisKey);
         return String.format("PAY%02d%s%06d", tenantId != null ? tenantId : 0, dateStr, seq);
     }
 }

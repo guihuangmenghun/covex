@@ -1,6 +1,7 @@
 package com.covex.web.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.covex.common.annotation.RequiresPermission;
 import com.covex.common.result.Result;
 import com.covex.service.entity.ChannelEntity;
 import com.covex.service.entity.ChannelProductEntity;
@@ -24,6 +25,7 @@ public class ChannelController {
         this.channelService = channelService;
     }
 
+    @RequiresPermission(code = "channel:create")
     @Operation(summary = "创建渠道商")
     @PostMapping
     public Result<ChannelEntity> create(@RequestBody ChannelEntity entity) {
@@ -50,6 +52,7 @@ public class ChannelController {
         return Result.ok(channelService.listChannels(tenantId, keyword, status, page, size));
     }
 
+    @RequiresPermission(code = "channel:edit")
     @Operation(summary = "更新渠道商")
     @PutMapping("/{id}")
     public Result<ChannelEntity> update(@PathVariable Long id, @RequestBody ChannelEntity entity) {

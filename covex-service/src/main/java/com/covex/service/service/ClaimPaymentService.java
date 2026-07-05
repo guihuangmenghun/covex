@@ -4,8 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.covex.common.exception.BizException;
 import com.covex.service.entity.*;
 import com.covex.service.mapper.*;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 理赔赔付服务
@@ -22,7 +26,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ClaimPaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(ClaimPaymentService.class);
-    private static final AtomicLong PAYMENT_SEQ = new AtomicLong(1);
 
     private final ClaimPaymentMapper claimPaymentMapper;
     private final ClaimMapper claimMapper;
@@ -30,26 +33,54 @@ public class ClaimPaymentService {
     private final PolicyCoverageMapper policyCoverageMapper;
     private final PolicyMapper policyMapper;
     private final CustomerMapper customerMapper;
+    private final RocketMQTemplate rocketMQTemplate;
+    private final RedissonClient redissonClient;
+    private final StringRedisTemplate redisTemplate;
 
     public ClaimPaymentService(ClaimPaymentMapper claimPaymentMapper,
                                 ClaimMapper claimMapper,
                                 PaymentMapper paymentMapper,
                                 PolicyCoverageMapper policyCoverageMapper,
                                 PolicyMapper policyMapper,
-                                CustomerMapper customerMapper) {
+                                CustomerMapper customerMapper,
+                                RocketMQTemplate rocketMQTemplate,
+                                RedissonClient redissonClient,
+                                StringRedisTemplate redisTemplate) {
         this.claimPaymentMapper = claimPaymentMapper;
         this.claimMapper = claimMapper;
         this.paymentMapper = paymentMapper;
         this.policyCoverageMapper = policyCoverageMapper;
         this.policyMapper = policyMapper;
         this.customerMapper = customerMapper;
+        this.rocketMQTemplate = rocketMQTemplate;
+        this.redissonClient = redissonClient;
+        this.redisTemplate = redisTemplate;
     }
 
     /**
-     * 创建赔付记录 + 支付记录（Mock 支付通道）
+     * 创建赔付记录 + 支付记录（Redisson 分布式锁防重复赔付）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ClaimPaymentEntity processPayment(Long claimId, Long beneficiaryId) {
+        RLock lock = redissonClient.getLock("lock:claim:payment:" + claimId);
+        try {
+            if (!lock.tryLock(5, 10, TimeUnit.SECONDS)) {
+                throw new BizException("赔付处理中，请稍后重试");
+            }
+            try {
+                return doProcessPayment(claimId, beneficiaryId);
+            } finally {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BizException("赔付处理被中断");
+        }
+    }
+
+    private ClaimPaymentEntity doProcessPayment(Long claimId, Long beneficiaryId) {
         ClaimEntity claim = claimMapper.selectById(claimId);
         if (claim == null) {
             throw new BizException(404, "理赔案件不存在: " + claimId);
@@ -116,7 +147,7 @@ public class ClaimPaymentService {
     /**
      * 通过 claimId 查找最新的赔付记录并处理支付回调
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void handlePaymentCallbackByClaimId(Long claimId, boolean success) {
         LambdaQueryWrapper<ClaimPaymentEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ClaimPaymentEntity::getClaimId, claimId)
@@ -134,7 +165,7 @@ public class ClaimPaymentService {
      * 成功：更新 claim status=4(已赔付)，更新累计已赔
      * 失败：保持 claim status=4，记录失败日志
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void handlePaymentCallback(Long claimPaymentId, boolean success) {
         ClaimPaymentEntity claimPayment = claimPaymentMapper.selectById(claimPaymentId);
         if (claimPayment == null) {
@@ -181,7 +212,7 @@ public class ClaimPaymentService {
     /**
      * 结案
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ClaimEntity closeCase(Long claimId) {
         ClaimEntity claim = claimMapper.selectById(claimId);
         if (claim == null) {
@@ -202,7 +233,7 @@ public class ClaimPaymentService {
     /**
      * 更新 ins_policy_coverage 的累计已赔金额（乐观锁保护）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updateCumulativePaid(Long coverageId, BigDecimal paidAmount) {
         PolicyCoverageEntity coverage = policyCoverageMapper.selectById(coverageId);
         if (coverage == null) {
@@ -231,7 +262,7 @@ public class ClaimPaymentService {
      * 如果累计已赔 >= 保额 → coverage status=2(已终止)
      * 如果所有 coverage 终止 → policy status=3(终止, reason=4 理赔终止)
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void checkCoverageTermination(Long coverageId) {
         PolicyCoverageEntity coverage = policyCoverageMapper.selectById(coverageId);
         if (coverage == null) {
@@ -274,7 +305,7 @@ public class ClaimPaymentService {
     /**
      * 拒赔申诉 → 创建新 review(type=3) → status 回到 2(审核中)
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ClaimEntity handleClaimDispute(Long claimId) {
         ClaimEntity claim = claimMapper.selectById(claimId);
         if (claim == null) {
@@ -305,16 +336,18 @@ public class ClaimPaymentService {
     }
 
     /**
-     * 发送赔付通知（Mock MQ 消息）
+     * 发送赔付通知（RocketMQ CLAIM_PAID 消息）
      */
     public void sendPaymentNotification(Long claimId) {
-        // Mock: 打印日志代替 RocketMQ 消息发送
-        log.info("[MQ-MOCK] Payment notification sent for claimId={}", claimId);
+        String message = String.format("claimId=%d, paidAt=%s", claimId, LocalDateTime.now());
+        rocketMQTemplate.convertAndSend("CLAIM_PAID", message);
+        log.info("CLAIM_PAID event sent to MQ: claimId={}", claimId);
     }
 
     private String generatePaymentNo(Long tenantId) {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        long seq = System.nanoTime() % 1000000;
+        String redisKey = "claim_payment_no:" + dateStr;
+        Long seq = redisTemplate.opsForValue().increment(redisKey);
         return String.format("CPAY%02d%s%06d", tenantId != null ? tenantId : 0, dateStr, seq);
     }
 }

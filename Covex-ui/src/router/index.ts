@@ -9,8 +9,37 @@ import ProductList from '@/views/product/ProductList.vue'
 import ProductDetail from '@/views/product/ProductDetail.vue'
 import NotFound from '@/views/error/NotFound.vue'
 import Forbidden from '@/views/error/Forbidden.vue'
+import ComingSoon from '@/components/ComingSoon.vue'
+import DictManagement from '@/views/system/DictManagement.vue'
+import UserManagement from '@/views/system/UserManagement.vue'
+import RoleManagement from '@/views/system/RoleManagement.vue'
+import PermissionManagement from '@/views/system/PermissionManagement.vue'
+import DataScopeManagement from '@/views/system/DataScopeManagement.vue'
+import CustomerList from '@/views/customer/CustomerList.vue'
+import CustomerCreate from '@/views/customer/CustomerCreate.vue'
+import CustomerDetail from '@/views/customer/CustomerDetail.vue'
+import RateTableList from '@/views/rate-table/RateTableList.vue'
+import RateTableCreate from '@/views/rate-table/RateTableCreate.vue'
+import RateTableDetail from '@/views/rate-table/RateTableDetail.vue'
+import RateQuery from '@/views/rate-table/RateQuery.vue'
+import ProposalList from '@/views/proposal/ProposalList.vue'
+import ProposalCreate from '@/views/proposal/ProposalCreate.vue'
+import ProposalDetail from '@/views/proposal/ProposalDetail.vue'
+import UnderwritingList from '@/views/underwriting/UnderwritingList.vue'
+import UnderwritingDetail from '@/views/underwriting/UnderwritingDetail.vue'
+import PaymentManagement from '@/views/payment/PaymentManagement.vue'
+import PolicyList from '@/views/policy/PolicyList.vue'
+import PolicyDetail from '@/views/policy/PolicyDetail.vue'
+import ClaimList from '@/views/claim/ClaimList.vue'
+import ClaimCreate from '@/views/claim/ClaimCreate.vue'
+import ClaimDetail from '@/views/claim/ClaimDetail.vue'
+import CommissionManagement from '@/views/commission/CommissionManagement.vue'
+import ChannelList from '@/views/channel/ChannelList.vue'
+import ChannelCreate from '@/views/channel/ChannelCreate.vue'
+import ChannelDetail from '@/views/channel/ChannelDetail.vue'
 
 const routes = [
+  // ====== 公共页面 ======
   {
     path: '/login',
     name: 'login',
@@ -29,39 +58,230 @@ const routes = [
     component: NotFound,
     meta: { requiresAuth: false, title: '页面不存在' },
   },
+
+  // ====== 主布局（需要认证） ======
   {
     path: '/',
     component: MainLayout,
     redirect: '/dashboard',
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, title: 'Covex' },
     children: [
+      // 工作台
       {
         path: 'dashboard',
         name: 'dashboard',
         component: Dashboard,
         meta: { title: '工作台', icon: 'Monitor' },
       },
+
+      // ====== 产品配置域 ======
       {
         path: 'product',
         name: 'product-list',
         component: ProductList,
-        meta: { title: '产品列表', icon: 'Goods', roles: ['admin', 'product_mgr'] },
+        meta: { title: '产品列表', roles: ['admin', 'product_mgr'] },
       },
       {
         path: 'product/create',
         name: 'product-create',
         component: ProductDetail,
-        meta: { title: '创建产品', icon: 'Plus', roles: ['admin', 'product_mgr'] },
+        meta: { title: '创建产品', roles: ['admin', 'product_mgr'] },
       },
       {
         path: 'product/:id',
         name: 'product-detail',
         component: ProductDetail,
-        meta: { title: '产品详情', icon: 'View' },
+        meta: { title: '产品详情' },
         props: true,
+      },
+
+      // 费率表
+      {
+        path: 'rate-table',
+        name: 'rate-table-list',
+        component: RateTableList,
+        meta: { title: '费率表管理', roles: ['admin', 'product_mgr'] },
+      },
+      {
+        path: 'rate-table/create',
+        name: 'rate-table-create',
+        component: RateTableCreate,
+        meta: { title: '创建费率表', roles: ['admin', 'product_mgr'] },
+      },
+      {
+        path: 'rate-table/query',
+        name: 'rate-table-query',
+        component: RateQuery,
+        meta: { title: '费率查询', roles: ['admin', 'product_mgr'] },
+      },
+      {
+        path: 'rate-table/:id',
+        name: 'rate-table-detail',
+        component: RateTableDetail,
+        meta: { title: '费率表详情', roles: ['admin', 'product_mgr'] },
+        props: true,
+      },
+
+      // ====== 承保管理域 ======
+      {
+        path: 'proposal',
+        name: 'proposal-list',
+        component: ProposalList,
+        meta: { title: '投保单列表' },
+      },
+      {
+        path: 'proposal/create',
+        name: 'proposal-create',
+        component: ProposalCreate,
+        meta: { title: '创建投保单' },
+      },
+      {
+        path: 'proposal/:id',
+        name: 'proposal-detail',
+        component: ProposalDetail,
+        meta: { title: '投保单详情' },
+        props: true,
+      },
+      {
+        path: 'underwriting',
+        name: 'underwriting-list',
+        component: UnderwritingList,
+        meta: { title: '核保工作台', roles: ['admin', 'underwriter'] },
+      },
+      {
+        path: 'underwriting/:proposalId',
+        name: 'underwriting-detail',
+        component: UnderwritingDetail,
+        meta: { title: '核保详情', roles: ['admin', 'underwriter'] },
+        props: true,
+      },
+      {
+        path: 'payment',
+        name: 'payment-list',
+        component: PaymentManagement,
+        meta: { title: '支付管理', roles: ['admin', 'product_mgr'] },
+      },
+
+      // ====== 保单管理域 ======
+      {
+        path: 'policy',
+        name: 'policy-list',
+        component: PolicyList,
+        meta: { title: '保单列表' },
+      },
+      {
+        path: 'policy/:id',
+        name: 'policy-detail',
+        component: PolicyDetail,
+        meta: { title: '保单详情' },
+        props: true,
+      },
+
+      // ====== 理赔管理域 ======
+      {
+        path: 'claim',
+        name: 'claim-list',
+        component: ClaimList,
+        meta: { title: '理赔工作台', roles: ['admin', 'claim_handler'] },
+      },
+      {
+        path: 'claim/create',
+        name: 'claim-create',
+        component: ClaimCreate,
+        meta: { title: '理赔报案', roles: ['admin', 'claim_handler'] },
+      },
+      {
+        path: 'claim/:id',
+        name: 'claim-detail',
+        component: ClaimDetail,
+        meta: { title: '理赔详情', roles: ['admin', 'claim_handler'] },
+        props: true,
+      },
+
+      // ====== 佣金管理域 ======
+      {
+        path: 'commission',
+        name: 'commission-list',
+        component: CommissionManagement,
+        meta: { title: '佣金管理', roles: ['admin', 'channel_mgr'] },
+      },
+
+      // ====== 客户管理域 ======
+      {
+        path: 'customer',
+        name: 'customer-list',
+        component: CustomerList,
+        meta: { title: '客户列表' },
+      },
+      {
+        path: 'customer/create',
+        name: 'customer-create',
+        component: CustomerCreate,
+        meta: { title: '创建客户' },
+      },
+      {
+        path: 'customer/:id',
+        name: 'customer-detail',
+        component: CustomerDetail,
+        meta: { title: '客户详情' },
+        props: true,
+      },
+
+      // ====== 渠道管理域 ======
+      {
+        path: 'channel',
+        name: 'channel-list',
+        component: ChannelList,
+        meta: { title: '渠道商列表', roles: ['admin', 'channel_mgr'] },
+      },
+      {
+        path: 'channel/create',
+        name: 'channel-create',
+        component: ChannelCreate,
+        meta: { title: '创建渠道商', roles: ['admin', 'channel_mgr'] },
+      },
+      {
+        path: 'channel/:id',
+        name: 'channel-detail',
+        component: ChannelDetail,
+        meta: { title: '渠道商详情', roles: ['admin', 'channel_mgr'] },
+        props: true,
+      },
+
+      // ====== 系统管理域 ======
+      {
+        path: 'system/user',
+        name: 'system-user',
+        component: UserManagement,
+        meta: { title: '用户管理', roles: ['admin'] },
+      },
+      {
+        path: 'system/role',
+        name: 'system-role',
+        component: RoleManagement,
+        meta: { title: '角色管理', roles: ['admin'] },
+      },
+      {
+        path: 'system/permission',
+        name: 'system-permission',
+        component: PermissionManagement,
+        meta: { title: '权限管理', roles: ['admin'] },
+      },
+      {
+        path: 'system/data-scope',
+        name: 'system-data-scope',
+        component: DataScopeManagement,
+        meta: { title: '数据范围', roles: ['admin'] },
+      },
+      {
+        path: 'system/dict',
+        name: 'system-dict',
+        component: DictManagement,
+        meta: { title: '数据字典', roles: ['admin'] },
       },
     ],
   },
+
   // 兜底路由
   {
     path: '/:pathMatch(.*)*',
@@ -80,18 +300,19 @@ router.beforeEach((to, _from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - Covex` : 'Covex'
 
   // 1. 不需要认证的页面直接放行
-  if (!to.meta.requiresAuth) {
+  if (!to.meta.requiresAuth && to.path !== '/') {
     return next()
   }
 
-  // 2. 检查 token
+  // 2. 检查 token（主布局的子路由默认需要认证）
   const userStore = useUserStore()
-  if (!userStore.token) {
+  const needsAuth = to.meta.requiresAuth !== false && to.path !== '/login'
+  if (needsAuth && !userStore.token) {
     return next({ path: '/login', query: { redirect: to.fullPath } })
   }
 
   // 3. 检查角色权限
-  if (to.meta.roles && to.meta.roles.length > 0) {
+  if (to.meta.roles && (to.meta.roles as string[]).length > 0) {
     if (!userStore.hasAnyRole(to.meta.roles as string[])) {
       return next('/403')
     }

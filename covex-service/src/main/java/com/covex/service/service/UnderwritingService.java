@@ -42,7 +42,7 @@ public class UnderwritingService {
      * 自动核保 — 由 LiteFlow underwrite 链驱动（已在 ProposalService.submitProposal 中调用）
      * 此方法用于保存自动核保的结论记录
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public UnderwritingRecordEntity saveAutoUwResult(Long proposalId, int uwResult,
                                                       BigDecimal loadingAmount,
                                                       String exclusionDesc, String comment) {
@@ -65,7 +65,7 @@ public class UnderwritingService {
     /**
      * 人工核保
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public UnderwritingRecordEntity manualUnderwrite(Long proposalId, ManualUnderwriteDTO dto) {
         ProposalEntity proposal = proposalMapper.selectById(proposalId);
         if (proposal == null) {

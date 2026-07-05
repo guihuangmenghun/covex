@@ -8,6 +8,8 @@ import com.covex.common.util.JwtUtil;
 import com.covex.service.entity.*;
 import com.covex.service.mapper.*;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -34,13 +37,17 @@ public class UserService {
     private final PermissionMapper permissionMapper;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final PermissionCacheService permissionCacheService;
+    private final RedissonClient redissonClient;
 
     public UserService(UserMapper userMapper,
                        UserRoleMapper userRoleMapper,
                        RoleMapper roleMapper,
                        RolePermissionMapper rolePermissionMapper,
                        PermissionMapper permissionMapper,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil,
+                       PermissionCacheService permissionCacheService,
+                       RedissonClient redissonClient) {
         this.userMapper = userMapper;
         this.userRoleMapper = userRoleMapper;
         this.roleMapper = roleMapper;
@@ -48,6 +55,8 @@ public class UserService {
         this.permissionMapper = permissionMapper;
         this.passwordEncoder = new BCryptPasswordEncoder();
         this.jwtUtil = jwtUtil;
+        this.permissionCacheService = permissionCacheService;
+        this.redissonClient = redissonClient;
     }
 
     /**
@@ -175,10 +184,29 @@ public class UserService {
     }
 
     /**
-     * 批量分配角色
+     * 批量分配角色（Redisson 分布式锁防并发冲突）
      */
     @Transactional(rollbackFor = Exception.class)
     public void assignRoles(Long userId, List<Long> roleIds) {
+        RLock lock = redissonClient.getLock("lock:user:assignRoles:" + userId);
+        try {
+            if (!lock.tryLock(5, 10, TimeUnit.SECONDS)) {
+                throw new BizException("角色分配操作冲突，请稍后重试");
+            }
+            try {
+                doAssignRoles(userId, roleIds);
+            } finally {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BizException("角色分配操作被中断");
+        }
+    }
+
+    private void doAssignRoles(Long userId, List<Long> roleIds) {
         getUserById(userId); // 确保用户存在
 
         // 物理删除原有角色关联（避免唯一约束冲突）
@@ -199,6 +227,7 @@ public class UserService {
             }
         }
         log.info("Roles assigned to user {}: {}", userId, roleIds);
+        permissionCacheService.evictUserPermissions(userId);
     }
 
     /**

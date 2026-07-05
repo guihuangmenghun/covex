@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.covex.common.util.TenantContext;
+import com.covex.service.interceptor.DataPermissionInterceptor;
+import com.covex.service.service.PermissionCacheService;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Set;
 
 /**
- * MyBatis-Plus 配置 — 多租户 + 乐观锁 + 分页插件
- * 拦截器顺序：多租户 → 乐观锁 → 分页
+ * MyBatis-Plus 配置 — 多租户 + 数据权限 + 乐观锁 + 分页插件
+ * 拦截器顺序：多租户 → 数据权限 → 乐观锁 → 分页
  */
 @Configuration
 public class MybatisPlusConfig {
@@ -28,7 +30,7 @@ public class MybatisPlusConfig {
     );
 
     @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+    public MybatisPlusInterceptor mybatisPlusInterceptor(PermissionCacheService permissionCacheService) {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
 
         // 1. 多租户拦截器（必须在最前面）
@@ -49,10 +51,13 @@ public class MybatisPlusConfig {
             }
         }));
 
-        // 2. 乐观锁拦截器
+        // 2. 数据权限拦截器（多租户之后）
+        interceptor.addInnerInterceptor(new DataPermissionInterceptor(permissionCacheService));
+
+        // 3. 乐观锁拦截器
         interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
 
-        // 3. 分页拦截器（必须在最后）
+        // 4. 分页拦截器（必须在最后）
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
 
         return interceptor;

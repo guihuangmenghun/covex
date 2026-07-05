@@ -12,6 +12,7 @@ import com.yomahub.liteflow.flow.LiteflowResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 投保单服务
@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ProposalService {
 
     private static final Logger log = LoggerFactory.getLogger(ProposalService.class);
-    private static final AtomicLong PROPOSAL_SEQ = new AtomicLong(1);
 
     /**
      * 投保单状态机：允许的流转
@@ -62,6 +61,7 @@ public class ProposalService {
     private final ChannelMapper channelMapper;
     private final UnderwritingRecordMapper uwRecordMapper;
     private final FlowExecutor flowExecutor;
+    private final StringRedisTemplate redisTemplate;
 
     public ProposalService(ProposalMapper proposalMapper,
                            ProductMapper productMapper,
@@ -69,7 +69,8 @@ public class ProposalService {
                            CustomerInsuredMapper customerInsuredMapper,
                            ChannelMapper channelMapper,
                            UnderwritingRecordMapper uwRecordMapper,
-                           FlowExecutor flowExecutor) {
+                           FlowExecutor flowExecutor,
+                           StringRedisTemplate redisTemplate) {
         this.proposalMapper = proposalMapper;
         this.productMapper = productMapper;
         this.customerService = customerService;
@@ -77,12 +78,13 @@ public class ProposalService {
         this.channelMapper = channelMapper;
         this.uwRecordMapper = uwRecordMapper;
         this.flowExecutor = flowExecutor;
+        this.redisTemplate = redisTemplate;
     }
 
     /**
      * 创建投保单（含产品快照深拷贝）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ProposalEntity createProposal(CreateProposalDTO dto) {
         // 验证产品存在
         ProductEntity product = productMapper.selectById(dto.getProductId());
@@ -127,7 +129,7 @@ public class ProposalService {
     /**
      * 提交投保单 — 触发 validate 链，通过则触发 underwrite 链
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ProposalEntity submitProposal(Long id) {
         ProposalEntity proposal = proposalMapper.selectById(id);
         if (proposal == null) {
@@ -238,7 +240,7 @@ public class ProposalService {
     /**
      * 更新投保单状态（带状态机校验）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long id, int newStatus) {
         ProposalEntity proposal = proposalMapper.selectById(id);
         if (proposal == null) {
@@ -316,7 +318,8 @@ public class ProposalService {
 
     private String generateProposalNo(Long tenantId) {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        long seq = System.nanoTime() % 1000000;
+        String redisKey = "proposal_no:" + dateStr;
+        Long seq = redisTemplate.opsForValue().increment(redisKey);
         return String.format("P%02d%s%06d", tenantId != null ? tenantId : 0, dateStr, seq);
     }
 

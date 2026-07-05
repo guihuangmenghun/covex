@@ -1,5 +1,6 @@
 package com.covex.web.controller;
 
+import com.covex.common.annotation.RequiresPermission;
 import com.covex.common.result.Result;
 import com.covex.service.entity.DataScopeEntity;
 import com.covex.service.service.DataScopeService;
@@ -20,6 +21,7 @@ public class DataScopeController {
         this.dataScopeService = dataScopeService;
     }
 
+    @RequiresPermission(code = "role:assign_perm")
     @Operation(summary = "设置角色数据范围")
     @PostMapping("/{roleId}")
     public Result<Void> setDataScopes(@PathVariable Long roleId, @RequestBody List<DataScopeEntity> scopes) {

@@ -37,13 +37,6 @@ spring:
       database: 0
       timeout: 5000
 
-  # RocketMQ
-  # Note: NameServer not running yet, will configure when available
-  # rocketmq:
-  #   name-server: 127.0.0.1:9876
-  #   producer:
-  #     group: covex-producer-group
-
   # Jackson
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -81,6 +74,14 @@ springdoc:
 liteflow:
   print-execution-log: true
   rule-source: classpath:liteflow/flow.el.xml
+
+# RocketMQ
+rocketmq:
+  name-server: 127.0.0.1:9876
+  producer:
+    group: covex-producer-group
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 2
 
 # Sentinel
 spring.cloud.sentinel:

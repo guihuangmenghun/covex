@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 理赔服务
@@ -33,7 +32,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ClaimService {
 
     private static final Logger log = LoggerFactory.getLogger(ClaimService.class);
-    private static final AtomicLong CLAIM_SEQ = new AtomicLong(1);
 
     private final ClaimMapper claimMapper;
     private final ClaimReviewMapper claimReviewMapper;
@@ -59,7 +57,7 @@ public class ClaimService {
     /**
      * 报案 — 创建理赔案件，触发 claim validate 链
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ClaimEntity reportClaim(ReportClaimDTO dto) {
         // 验证保单
         PolicyEntity policy = policyMapper.selectById(dto.getPolicyId());
@@ -174,7 +172,7 @@ public class ClaimService {
     /**
      * 自动分配理赔员（Redis 轮转计数器）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ClaimEntity assignHandler(Long claimId) {
         ClaimEntity claim = claimMapper.selectById(claimId);
         if (claim == null) {
@@ -205,7 +203,7 @@ public class ClaimService {
     /**
      * 提交审核结论
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ClaimReviewEntity submitReview(Long claimId, ClaimReviewDTO dto) {
         ClaimEntity claim = claimMapper.selectById(claimId);
         if (claim == null) {
@@ -259,7 +257,7 @@ public class ClaimService {
     /**
      * 赔付计算 — 触发 claim calculation 链
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public BigDecimal calculateClaimAmount(Long claimId) {
         ClaimEntity claim = claimMapper.selectById(claimId);
         if (claim == null) {
@@ -293,7 +291,7 @@ public class ClaimService {
     /**
      * 标记需调查
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ClaimEntity startInvestigation(Long claimId) {
         ClaimEntity claim = claimMapper.selectById(claimId);
         if (claim == null) {
@@ -313,7 +311,7 @@ public class ClaimService {
     /**
      * 调查结论提交 → 重新进入审核
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ClaimEntity submitInvestigationResult(Long claimId, InvestigationResultDTO dto) {
         ClaimEntity claim = claimMapper.selectById(claimId);
         if (claim == null) {
@@ -377,7 +375,8 @@ public class ClaimService {
 
     private String generateClaimNo(Long tenantId) {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        long seq = System.nanoTime() % 1000000;
+        String redisKey = "claim_no:" + dateStr;
+        Long seq = redisTemplate.opsForValue().increment(redisKey);
         return String.format("CLM%02d%s%06d", tenantId != null ? tenantId : 0, dateStr, seq);
     }
 }

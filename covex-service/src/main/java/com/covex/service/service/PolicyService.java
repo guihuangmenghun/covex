@@ -67,7 +67,7 @@ public class PolicyService {
      * 5. 更新投保单 status=6
      * 6. 异步：触发 RocketMQ POLICY_ISSUED 消息
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public PolicyEntity issuePolicy(Long proposalId) {
         ProposalEntity proposal = proposalMapper.selectById(proposalId);
         if (proposal == null) {
@@ -147,7 +147,7 @@ public class PolicyService {
     /**
      * 更新保单状态
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updatePolicyStatus(Long id, int newStatus, Integer terminationReason) {
         PolicyEntity policy = policyMapper.selectById(id);
         if (policy == null) {

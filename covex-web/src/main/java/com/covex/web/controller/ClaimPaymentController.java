@@ -1,5 +1,6 @@
 package com.covex.web.controller;
 
+import com.covex.common.annotation.RequiresPermission;
 import com.covex.common.result.Result;
 import com.covex.service.dto.ClaimPaymentCallbackDTO;
 import com.covex.service.dto.ClaimPaymentDTO;
@@ -21,6 +22,7 @@ public class ClaimPaymentController {
         this.claimPaymentService = claimPaymentService;
     }
 
+    @RequiresPermission(code = "claim:pay")
     @Operation(summary = "触发赔付")
     @PostMapping("/process")
     public Result<ClaimPaymentEntity> processPayment(@PathVariable Long claimId,

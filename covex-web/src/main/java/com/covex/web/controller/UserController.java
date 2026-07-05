@@ -1,6 +1,7 @@
 package com.covex.web.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.covex.common.annotation.RequiresPermission;
 import com.covex.common.result.Result;
 import com.covex.service.entity.PermissionEntity;
 import com.covex.service.entity.RoleEntity;
@@ -24,6 +25,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @RequiresPermission(code = "user:create")
     @Operation(summary = "创建用户")
     @PostMapping
     public Result<UserEntity> createUser(@RequestBody Map<String, Object> body) {
@@ -67,6 +69,7 @@ public class UserController {
         return Result.ok(result);
     }
 
+    @RequiresPermission(code = "user:edit")
     @Operation(summary = "更新用户")
     @PutMapping("/{id}")
     public Result<UserEntity> updateUser(@PathVariable Long id, @RequestBody UserEntity entity) {
@@ -82,6 +85,7 @@ public class UserController {
         return Result.ok();
     }
 
+    @RequiresPermission(code = "user:assign_role")
     @Operation(summary = "分配角色")
     @PostMapping("/{id}/roles")
     public Result<Void> assignRoles(@PathVariable Long id, @RequestBody List<Long> roleIds) {

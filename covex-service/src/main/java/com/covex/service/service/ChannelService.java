@@ -53,7 +53,7 @@ public class ChannelService {
 
     // ========== CRUD ==========
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ChannelEntity createChannel(ChannelEntity entity) {
         // Generate channel_code
         entity.setChannelCode(UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase());
@@ -69,7 +69,7 @@ public class ChannelService {
         return decryptChannel(entity);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ChannelEntity updateChannel(Long id, ChannelEntity entity) {
         ChannelEntity existing = channelMapper.selectById(id);
         if (existing == null) {
@@ -118,7 +118,7 @@ public class ChannelService {
 
     // ========== Status Machine ==========
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ChannelEntity updateStatus(Long id, Integer newStatus) {
         ChannelEntity existing = channelMapper.selectById(id);
         if (existing == null) {
@@ -142,7 +142,7 @@ public class ChannelService {
 
     // ========== Product Authorization ==========
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ChannelProductEntity authorizeProduct(Long channelId, Long productId,
                                                   java.math.BigDecimal firstYearRate,
                                                   java.math.BigDecimal renewalRate) {
@@ -183,7 +183,7 @@ public class ChannelService {
         return cp;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void revokeProduct(Long channelId, Long productId) {
         LambdaQueryWrapper<ChannelProductEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ChannelProductEntity::getChannelId, channelId)

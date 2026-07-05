@@ -1,5 +1,6 @@
 package com.covex.web.controller;
 
+import com.covex.common.annotation.RequiresPermission;
 import com.covex.common.result.Result;
 import com.covex.service.entity.CommissionEntity;
 import com.covex.service.service.CommissionService;
@@ -44,6 +45,7 @@ public class CommissionController {
         return Result.ok(commissionService.calculateCommission(tenantId, policyId, channelId, channelUserId, premiumAmount, commissionType, commissionRate));
     }
 
+    @RequiresPermission(code = "commission:settle")
     @Operation(summary = "触发月度结算")
     @PostMapping("/settle")
     public Result<Map<String, Object>> settle(@RequestBody Map<String, String> body) {

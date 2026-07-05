@@ -68,7 +68,7 @@ public class ProductService {
     /**
      * 创建产品（status=草稿）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ProductEntity createProduct(ProductEntity entity) {
         entity.setVersionStatus(1); // 草稿
         if (entity.getStatus() == null) {
@@ -137,7 +137,7 @@ public class ProductService {
     /**
      * 更新产品（仅草稿/审批驳回可修改）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ProductEntity updateProduct(Long id, ProductEntity entity) {
         ProductEntity existing = productMapper.selectById(id);
         if (existing == null) {
@@ -161,7 +161,7 @@ public class ProductService {
     /**
      * 克隆产品（深拷贝所有关联表）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ProductEntity cloneProduct(Long id) {
         ProductEntity source = productMapper.selectById(id);
         if (source == null) {
@@ -224,7 +224,7 @@ public class ProductService {
      * 发布产品（草稿→待审批→已发布）
      * 简化实现：草稿直接发布（跳过审批）或按状态机流转
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ProductEntity publishProduct(Long id) {
         ProductEntity existing = productMapper.selectById(id);
         if (existing == null) {
@@ -270,7 +270,7 @@ public class ProductService {
     /**
      * 冻结产品（已发布→已冻结）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ProductEntity freezeProduct(Long id) {
         ProductEntity existing = productMapper.selectById(id);
         if (existing == null) {

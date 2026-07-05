@@ -23,10 +23,13 @@ public class DataScopeService {
 
     private final DataScopeMapper dataScopeMapper;
     private final RoleMapper roleMapper;
+    private final PermissionCacheService permissionCacheService;
 
-    public DataScopeService(DataScopeMapper dataScopeMapper, RoleMapper roleMapper) {
+    public DataScopeService(DataScopeMapper dataScopeMapper, RoleMapper roleMapper,
+                            PermissionCacheService permissionCacheService) {
         this.dataScopeMapper = dataScopeMapper;
         this.roleMapper = roleMapper;
+        this.permissionCacheService = permissionCacheService;
     }
 
     /**
@@ -51,6 +54,7 @@ public class DataScopeService {
             }
         }
         log.info("Data scopes set for role {}: {} entries", roleId, scopes != null ? scopes.size() : 0);
+        permissionCacheService.evictAllPermissions();
     }
 
     /**

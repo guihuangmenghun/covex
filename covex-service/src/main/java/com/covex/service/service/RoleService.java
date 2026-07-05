@@ -29,13 +29,16 @@ public class RoleService {
     private final RoleMapper roleMapper;
     private final RolePermissionMapper rolePermissionMapper;
     private final PermissionMapper permissionMapper;
+    private final PermissionCacheService permissionCacheService;
 
     public RoleService(RoleMapper roleMapper,
                        RolePermissionMapper rolePermissionMapper,
-                       PermissionMapper permissionMapper) {
+                       PermissionMapper permissionMapper,
+                       PermissionCacheService permissionCacheService) {
         this.roleMapper = roleMapper;
         this.rolePermissionMapper = rolePermissionMapper;
         this.permissionMapper = permissionMapper;
+        this.permissionCacheService = permissionCacheService;
     }
 
     /**
@@ -135,6 +138,7 @@ public class RoleService {
             }
         }
         log.info("Permissions assigned to role {}: {}", roleId, permissionIds);
+        permissionCacheService.evictAllPermissions();
     }
 
     /**

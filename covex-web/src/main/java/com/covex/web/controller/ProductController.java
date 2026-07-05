@@ -1,6 +1,7 @@
 package com.covex.web.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.covex.common.annotation.RequiresPermission;
 import com.covex.common.result.Result;
 import com.covex.service.entity.*;
 import com.covex.service.service.*;
@@ -26,6 +27,7 @@ public class ProductController {
         this.changelogService = changelogService;
     }
 
+    @RequiresPermission(code = "product:create")
     @Operation(summary = "创建产品")
     @PostMapping
     public Result<ProductEntity> create(@RequestBody ProductEntity entity) {
@@ -63,6 +65,7 @@ public class ProductController {
         return Result.ok(productService.listProducts(tenantId, productType, versionStatus, keyword, page, size));
     }
 
+    @RequiresPermission(code = "product:edit")
     @Operation(summary = "更新产品（仅草稿/审批驳回）")
     @PutMapping("/{id}")
     public Result<ProductEntity> update(@PathVariable Long id, @RequestBody ProductEntity entity) {
@@ -75,6 +78,7 @@ public class ProductController {
         return Result.ok(productService.cloneProduct(id));
     }
 
+    @RequiresPermission(code = "product:publish")
     @Operation(summary = "发布产品")
     @PutMapping("/{id}/publish")
     public Result<ProductEntity> publish(@PathVariable Long id) {

@@ -1,5 +1,6 @@
 package com.covex.web.controller;
 
+import com.covex.common.annotation.RequiresPermission;
 import com.covex.common.result.Result;
 import com.covex.service.entity.PermissionEntity;
 import com.covex.service.entity.RoleEntity;
@@ -21,6 +22,7 @@ public class RoleController {
         this.roleService = roleService;
     }
 
+    @RequiresPermission(code = "role:create")
     @Operation(summary = "创建角色")
     @PostMapping
     public Result<RoleEntity> createRole(@RequestBody RoleEntity entity) {
@@ -34,6 +36,7 @@ public class RoleController {
         return Result.ok(roleService.listRoles());
     }
 
+    @RequiresPermission(code = "role:edit")
     @Operation(summary = "更新角色")
     @PutMapping("/{id}")
     public Result<RoleEntity> updateRole(@PathVariable Long id, @RequestBody RoleEntity entity) {
@@ -47,6 +50,7 @@ public class RoleController {
         return Result.ok();
     }
 
+    @RequiresPermission(code = "role:assign_perm")
     @Operation(summary = "分配权限")
     @PostMapping("/{id}/permissions")
     public Result<Void> assignPermissions(@PathVariable Long id, @RequestBody List<Long> permissionIds) {

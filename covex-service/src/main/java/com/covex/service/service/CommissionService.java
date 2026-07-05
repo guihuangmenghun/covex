@@ -34,7 +34,7 @@ public class CommissionService {
      * 计算佣金 — 幂等（commission_no 去重）
      * commission_no = policyId + "-" + commissionType
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public CommissionEntity calculateCommission(Long tenantId, Long policyId, Long channelId,
                                                  Long channelUserId, BigDecimal premiumAmount,
                                                  Integer commissionType, BigDecimal commissionRate) {
@@ -97,7 +97,7 @@ public class CommissionService {
     /**
      * 月度结算 — 将该月份所有待结算佣金状态变更为已确认
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> monthlySettle(String yearMonth) {
         LambdaQueryWrapper<CommissionEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CommissionEntity::getSettleMonth, yearMonth)
@@ -132,7 +132,7 @@ public class CommissionService {
     /**
      * 确认支付 — 将已确认的佣金标记为已支付
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public CommissionEntity confirmSettle(Long commissionId) {
         CommissionEntity existing = commissionMapper.selectById(commissionId);
         if (existing == null) {

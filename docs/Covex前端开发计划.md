@@ -276,17 +276,17 @@ Covex 管理平台
 
 > 依赖：无 | 验收：`npm run dev` 启动成功，ESLint 无报错，TypeScript 编译通过
 
-- [ ] 使用 Vite 6 创建 Vue 3 + TypeScript 项目
-- [ ] 安装核心依赖：element-plus 2.9.7、vue-router 4、pinia 3、axios
-- [ ] 安装开发依赖：eslint 9、@vue/eslint-config-typescript、prettier、sass
-- [ ] 配置 ESLint + Prettier（统一代码风格）
-- [ ] 配置 Vite 代理（开发环境 /api -> http://localhost:8080）
-- [ ] 配置 TypeScript 严格模式
-- [ ] 配置路径别名（@/ -> src/）
-- [ ] 建立目录结构：api/、components/、views/、stores/、router/、utils/、types/
-- [ ] 封装 axios 实例（baseURL、拦截器、JWT Token 自动注入、统一错误处理）
-- [ ] 封装 Result\<T\> 类型定义（与后端 Result 对齐）
-- [ ] 配置环境变量（.env.development / .env.production）
+- [x] 使用 Vite 6 创建 Vue 3 + TypeScript 项目
+- [x] 安装核心依赖：element-plus 2.9.7、vue-router 4、pinia 3、axios
+- [x] 安装开发依赖：eslint 9、@vue/eslint-config-typescript、prettier、sass
+- [x] 配置 ESLint + Prettier（统一代码风格）
+- [x] 配置 Vite 代理（开发环境 /api -> http://localhost:8080）
+- [x] 配置 TypeScript 严格模式
+- [x] 配置路径别名（@/ -> src/）
+- [x] 建立目录结构：api/、components/、views/、stores/、router/、utils/、types/
+- [x] 封装 axios 实例（baseURL、拦截器、JWT Token 自动注入、统一错误处理）
+- [x] 封装 Result\<T\> 类型定义（与后端 Result 对齐）
+- [x] 配置环境变量（.env.development / .env.production）
 
 ---
 
@@ -294,15 +294,15 @@ Covex 管理平台
 
 > 依赖：F1 | 验收：管理员登录成功 -> 跳转到工作台 -> 侧边栏菜单完整展示 -> 退出登录清除 Token
 
-- [ ] 实现登录页（/login）：用户名+密码表单，调用 POST /api/user/login
-- [ ] 登录成功后存储 JWT Token（localStorage / Pinia store）
-- [ ] 实现全局布局组件：左侧边栏 + 顶部导航 + 内容区
-- [ ] 实现侧边栏菜单（按菜单结构渲染，支持折叠/展开）
-- [ ] 实现顶部导航（用户信息 + 退出登录按钮）
-- [ ] 配置 Vue Router 路由守卫（未登录跳转 /login）
-- [ ] 实现 Pinia 用户状态管理（token / userInfo / permissions）
-- [ ] 实现面包屑导航组件
-- [ ] 实现 403 / 404 异常页面
+- [x] 实现登录页（/login）：用户名+密码表单，调用 POST /api/user/login
+- [x] 登录成功后存储 JWT Token（localStorage / Pinia store）
+- [x] 实现全局布局组件：左侧边栏 + 顶部导航 + 内容区
+- [x] 实现侧边栏菜单（按菜单结构渲染，支持折叠/展开）
+- [x] 实现顶部导航（用户信息 + 退出登录按钮）
+- [x] 配置 Vue Router 路由守卫（未登录跳转 /login）
+- [x] 实现 Pinia 用户状态管理（token / userInfo / permissions）
+- [x] 实现面包屑导航组件
+- [x] 实现 403 / 404 异常页面
 
 ---
 
@@ -319,13 +319,13 @@ Covex 管理平台
 - DELETE /api/dict/{id}（删除）
 - POST /api/dict/cache/evict（清空缓存）
 
-- [ ] 创建字典管理 API 层（src/api/dict.ts）
-- [ ] 实现字典列表页：左侧字典类型树 + 右侧字典项表格
-- [ ] 实现字典项新增/编辑弹窗（dict_type / dict_code / dict_label / sort_order / parent_code）
-- [ ] 实现字典项删除（二次确认）
-- [ ] 实现层级字典展示（树形结构）
-- [ ] 实现清空缓存按钮
-- [ ] 配置路由：/system/dict
+- [x] 创建字典管理 API 层（src/api/dict.ts）
+- [x] 实现字典列表页：左侧字典类型树 + 右侧字典项表格
+- [x] 实现字典项新增/编辑弹窗（dict_type / dict_code / dict_label / sort_order / parent_code）
+- [x] 实现字典项删除（二次确认）
+- [x] 实现层级字典展示（树形结构）
+- [x] 实现清空缓存按钮
+- [x] 配置路由：/system/dict
 
 ---
 
@@ -339,17 +339,17 @@ Covex 管理平台
 - 权限管理：POST/GET /api/permission、GET /api/permission/modules
 - 数据范围：POST/GET /api/data-scope/{roleId}
 
-- [ ] 创建用户/角色/权限 API 层
-- [ ] 实现用户列表页（分页 + 关键字搜索 + 状态标签）
-- [ ] 实现用户创建/编辑表单（用户名/姓名/手机号/邮箱/用户类型）
-- [ ] 实现用户状态切换（启用/停用）
-- [ ] 实现用户角色分配弹窗（穿梭框/多选）
-- [ ] 实现角色列表页（卡片/表格模式）
-- [ ] 实现角色创建/编辑表单
-- [ ] 实现角色权限分配页（树形权限选择，按模块分组）
-- [ ] 实现权限列表页（按模块分组展示）
-- [ ] 实现数据范围配置页（选择角色 -> 配置数据范围规则）
-- [ ] 配置路由：/system/user、/system/role、/system/permission、/system/data-scope
+- [x] 创建用户/角色/权限 API 层
+- [x] 实现用户列表页（分页 + 关键字搜索 + 状态标签）
+- [x] 实现用户创建/编辑表单（用户名/姓名/手机号/邮箱/用户类型）
+- [x] 实现用户状态切换（启用/停用）
+- [x] 实现用户角色分配弹窗（穿梭框/多选）
+- [x] 实现角色列表页（卡片/表格模式）
+- [x] 实现角色创建/编辑表单
+- [x] 实现角色权限分配页（树形权限选择，按模块分组）
+- [x] 实现权限列表页（按模块分组展示）
+- [x] 实现数据范围配置页（选择角色 -> 配置数据范围规则）
+- [x] 配置路由：/system/user、/system/role、/system/permission、/system/data-scope
 
 ---
 
@@ -362,17 +362,17 @@ Covex 管理平台
 - 地址：POST/GET/PUT/DELETE /api/customer/{customerId}/address、PUT .../default
 - 银行账户：POST/GET/PUT/DELETE /api/customer/{customerId}/bank-account、PUT .../default
 
-- [ ] 创建客户 API 层（src/api/customer.ts）
-- [ ] 实现客户列表页（分页 + 关键字搜索：姓名/证件号/手机号）
-- [ ] 实现客户创建表单（姓名/证件类型/证件号/性别/出生日期/手机号/邮箱）
-- [ ] 实现客户详情页，包含 Tab 页签：
+- [x] 创建客户 API 层（src/api/customer.ts）
+- [x] 实现客户列表页（分页 + 关键字搜索：姓名/证件号/手机号）
+- [x] 实现客户创建表单（姓名/证件类型/证件号/性别/出生日期/手机号/邮箱）
+- [x] 实现客户详情页，包含 Tab 页签：
   - 基本信息 Tab：客户详情 + 编辑功能
   - 联系地址 Tab：地址列表 + CRUD + 设置默认地址
   - 银行账户 Tab：账户列表 + CRUD + 设置默认 + 代扣协议保护提示
   - 健康档案 Tab：既往病史/家族病史/当前用药 JSON 表单
-- [ ] 实现投保人/被保人角色扩展操作按钮
-- [ ] 证件号、手机号脱敏展示
-- [ ] 配置路由：/customer、/customer/create、/customer/:id
+- [x] 实现投保人/被保人角色扩展操作按钮
+- [x] 证件号、手机号脱敏展示
+- [x] 配置路由：/customer、/customer/create、/customer/:id
 
 ---
 
@@ -388,10 +388,10 @@ Covex 管理平台
 - 文档：POST/GET/PUT/DELETE /api/product/{productId}/document
 - 附险：POST/GET/DELETE /api/product/{productId}/rider
 
-- [ ] 创建产品 API 层（src/api/product.ts）
-- [ ] 实现产品列表页（分页 + 产品类型筛选 + 版本状态筛选 + 关键字搜索）
-- [ ] 实现产品创建表单（产品编码/名称/类型/险种类别/版本/描述）
-- [ ] 实现产品详情页，包含 Tab 页签：
+- [x] 创建产品 API 层（src/api/product.ts）
+- [x] 实现产品列表页（分页 + 产品类型筛选 + 版本状态筛选 + 关键字搜索）
+- [x] 实现产品创建表单（产品编码/名称/类型/险种类别/版本/描述）
+- [x] 实现产品详情页，包含 Tab 页签：
   - 基本信息 Tab：产品详情 + 编辑（仅草稿/驳回状态可编辑）
   - 保障定义 Tab：保障列表 CRUD + 关联缴费计划
   - 缴费计划 Tab：缴费计划列表 CRUD
@@ -399,9 +399,9 @@ Covex 管理平台
   - 条款文档 Tab：文档列表 CRUD
   - 附加险 Tab：主附险关联管理
   - 变更历史 Tab：时间线展示变更记录
-- [ ] 实现产品操作按钮：发布、冻结、克隆
-- [ ] 产品状态标签（草稿/已发布/已冻结/已驳回）
-- [ ] 配置路由：/product、/product/create、/product/:id
+- [x] 实现产品操作按钮：发布、冻结、克隆
+- [x] 产品状态标签（草稿/已发布/已冻结/已驳回）
+- [x] 配置路由：/product、/product/create、/product/:id
 
 ---
 
@@ -418,14 +418,14 @@ Covex 管理平台
 - POST /api/rate-table/load
 - POST /api/rate-table/evict
 
-- [ ] 创建费率表 API 层（src/api/rateTable.ts）
-- [ ] 实现费率表列表页（按产品筛选）
-- [ ] 实现费率表创建表单（表编码/名称/产品关联/版本号/描述）
-- [ ] 实现费率表详情页：表头信息 + 行数据表格
-- [ ] 实现费率行数据批量导入（JSON 格式输入或表格编辑）
-- [ ] 实现费率查询工具页（输入 tableCode + version + dimensionKey -> 展示费率值）
-- [ ] 实现加载到 Redis / 清除缓存操作按钮
-- [ ] 配置路由：/rate-table、/rate-table/:id、/rate-table/query
+- [x] 创建费率表 API 层（src/api/rateTable.ts）
+- [x] 实现费率表列表页（按产品筛选）
+- [x] 实现费率表创建表单（表编码/名称/产品关联/版本号/描述）
+- [x] 实现费率表详情页：表头信息 + 行数据表格
+- [x] 实现费率行数据批量导入（JSON 格式输入或表格编辑）
+- [x] 实现费率查询工具页（输入 tableCode + version + dimensionKey -> 展示费率值）
+- [x] 实现加载到 Redis / 清除缓存操作按钮
+- [x] 配置路由：/rate-table、/rate-table/:id、/rate-table/query
 
 ---
 
@@ -439,13 +439,13 @@ Covex 管理平台
 - GET /api/proposal
 - PUT /api/proposal/{id}/submit
 
-- [ ] 创建投保单 API 层（src/api/proposal.ts）
-- [ ] 实现投保单列表页（分页 + 状态筛选 + 渠道筛选 + 关键字搜索）
-- [ ] 实现投保单创建表单（产品选择/投保人/被保人/保额/起保日期/渠道/渠道用户）
-- [ ] 实现投保单详情页（完整信息展示 + 状态流转标签）
-- [ ] 实现提交投保单操作（二次确认 -> 触发后端校验+核保链）
-- [ ] 投保单状态标签（草稿/待核保/核保通过/核保拒绝/待支付/已支付/已出单/已撤销）
-- [ ] 配置路由：/proposal、/proposal/create、/proposal/:id
+- [x] 创建投保单 API 层（src/api/proposal.ts）
+- [x] 实现投保单列表页（分页 + 状态筛选 + 渠道筛选 + 关键字搜索）
+- [x] 实现投保单创建表单（产品选择/投保人/被保人/保额/起保日期/渠道/渠道用户）
+- [x] 实现投保单详情页（完整信息展示 + 状态流转标签）
+- [x] 实现提交投保单操作（二次确认 -> 触发后端校验+核保链）
+- [x] 投保单状态标签（草稿/待核保/核保通过/核保拒绝/待支付/已支付/已出单/已撤销）
+- [x] 配置路由：/proposal、/proposal/create、/proposal/:id
 
 ---
 
@@ -458,13 +458,13 @@ Covex 管理平台
 - POST /api/underwriting/manual/{proposalId}
 - GET /api/underwriting/records/{proposalId}
 
-- [ ] 创建核保 API 层（src/api/underwriting.ts）
-- [ ] 实现核保工作台页面：
+- [x] 创建核保 API 层（src/api/underwriting.ts）
+- [x] 实现核保工作台页面：
   - 待核保任务列表（调用投保单列表 API，status=待核保）
   - 核保操作面板（自动核保按钮 + 人工核保表单）
-- [ ] 实现人工核保表单（核保结论：通过/加费/除外/拒保 + 备注）
-- [ ] 实现核保记录查看（时间线展示每次核保结果）
-- [ ] 配置路由：/underwriting、/underwriting/:proposalId
+- [x] 实现人工核保表单（核保结论：通过/加费/除外/拒保 + 备注）
+- [x] 实现核保记录查看（时间线展示每次核保结果）
+- [x] 配置路由：/underwriting、/underwriting/:proposalId
 
 ---
 
@@ -479,14 +479,14 @@ Covex 管理平台
 - GET /api/payment/query/{proposalId}
 - POST /api/payment/timeout-scan
 
-- [ ] 创建支付 API 层（src/api/payment.ts）
-- [ ] 实现支付管理页面：
+- [x] 创建支付 API 层（src/api/payment.ts）
+- [x] 实现支付管理页面：
   - 按投保单号查询支付记录
   - 支付记录列表（金额/状态/时间/流水号）
-- [ ] 实现保费计算操作（输入投保单 ID -> 展示计算结果）
-- [ ] 实现创建支付记录操作
-- [ ] 实现超时扫描按钮（手动触发）
-- [ ] 配置路由：/payment
+- [x] 实现保费计算操作（输入投保单 ID -> 展示计算结果）
+- [x] 实现创建支付记录操作
+- [x] 实现超时扫描按钮（手动触发）
+- [x] 配置路由：/payment
 
 ---
 
@@ -499,15 +499,15 @@ Covex 管理平台
 - GET /api/policy/{id}
 - GET /api/policy
 
-- [ ] 创建保单 API 层（src/api/policy.ts）
-- [ ] 实现保单列表页（分页 + 保单号搜索 + 状态筛选 + 投保人筛选）
-- [ ] 实现出单操作（从已支付投保单生成保单，二次确认）
-- [ ] 实现保单详情页：
+- [x] 创建保单 API 层（src/api/policy.ts）
+- [x] 实现保单列表页（分页 + 保单号搜索 + 状态筛选 + 投保人筛选）
+- [x] 实现出单操作（从已支付投保单生成保单，二次确认）
+- [x] 实现保单详情页：
   - 基本信息区（保单号/产品名/投保人/被保人/保额/保费/起止日期/状态）
   - 险种明细 Tab（保障列表：险种名/保额/费率/保费）
   - 缴费计划 Tab（缴费期次/应缴日期/应缴金额/实缴状态）
-- [ ] 保单状态标签（有效/宽限期/中止/终止/退保）
-- [ ] 配置路由：/policy、/policy/:id
+- [x] 保单状态标签（有效/宽限期/中止/终止/退保）
+- [x] 配置路由：/policy、/policy/:id
 
 ---
 
@@ -520,22 +520,22 @@ Covex 管理平台
 - 材料：POST/GET /api/claim/{claimId}/document
 - 赔付：POST /api/claim/{claimId}/payment/process、.../callback、.../close、.../dispute
 
-- [ ] 创建理赔 API 层（src/api/claim.ts）
-- [ ] 实现理赔工作台页面：
+- [x] 创建理赔 API 层（src/api/claim.ts）
+- [x] 实现理赔工作台页面：
   - 理赔列表（分页 + 保单号搜索 + 状态筛选 + 处理人筛选）
   - 快捷操作（分配理赔员）
-- [ ] 实现理赔报案表单（保单号/出险时间/出险原因/报案描述/预估金额）
-- [ ] 实现理赔详情页，包含操作区域：
+- [x] 实现理赔报案表单（保单号/出险时间/出险原因/报案描述/预估金额）
+- [x] 实现理赔详情页，包含操作区域：
   - 基本信息区（理赔号/保单号/报案信息/状态/处理人）
   - 操作按钮组（分配理赔员/提交审核/启动调查/赔付计算/触发赔付/结案/拒赔申诉）
   - 理赔材料 Tab（材料列表 + 上传功能）
   - 审核记录 Tab（审核结论/审核人/时间）
   - 调查记录 Tab（调查结论/调查人/时间）
   - 赔付信息 Tab（赔付金额/支付状态/支付流水）
-- [ ] 实现审核表单（审核结论：通过/拒绝 + 审核意见）
-- [ ] 实现调查结论表单（调查结论：正常/欺诈/部分欺诈 + 调查报告）
-- [ ] 理赔状态标签（已报案/已分配/审核中/调查中/待赔付/已赔付/已结案/已拒赔/申诉中）
-- [ ] 配置路由：/claim、/claim/create、/claim/:id
+- [x] 实现审核表单（审核结论：通过/拒绝 + 审核意见）
+- [x] 实现调查结论表单（调查结论：正常/欺诈/部分欺诈 + 调查报告）
+- [x] 理赔状态标签（已报案/已分配/审核中/调查中/待赔付/已赔付/已结案/已拒赔/申诉中）
+- [x] 配置路由：/claim、/claim/create、/claim/:id
 
 ---
 
@@ -550,14 +550,14 @@ Covex 管理平台
 - GET /api/commission/summary
 - PUT /api/commission/confirm
 
-- [ ] 创建佣金 API 层（src/api/commission.ts）
-- [ ] 实现佣金列表页（渠道筛选 + 月份筛选 + 状态筛选）
-- [ ] 实现计算佣金表单（保单ID/渠道ID/渠道用户ID/保费金额/佣金类型/费率）
-- [ ] 实现月度结算操作（输入 yearMonth -> 触发结算 -> 展示结果）
-- [ ] 实现确认支付操作
-- [ ] 实现月度汇总统计卡片（选择渠道+月份 -> 展示统计）
-- [ ] 佣金状态标签（待结算/已结算/已支付）
-- [ ] 配置路由：/commission
+- [x] 创建佣金 API 层（src/api/commission.ts）
+- [x] 实现佣金列表页（渠道筛选 + 月份筛选 + 状态筛选）
+- [x] 实现计算佣金表单（保单ID/渠道ID/渠道用户ID/保费金额/佣金类型/费率）
+- [x] 实现月度结算操作（输入 yearMonth -> 触发结算 -> 展示结果）
+- [x] 实现确认支付操作
+- [x] 实现月度汇总统计卡片（选择渠道+月份 -> 展示统计）
+- [x] 佣金状态标签（待结算/已结算/已支付）
+- [x] 配置路由：/commission
 
 ---
 
@@ -569,15 +569,15 @@ Covex 管理平台
 - 渠道商：POST/GET/PUT /api/channel、PUT .../status、POST .../authorize、DELETE .../authorize/{productId}、GET .../products
 - 渠道账号：POST/GET/PUT /api/channel/{channelId}/user、PUT .../status
 
-- [ ] 创建渠道 API 层（src/api/channel.ts）
-- [ ] 实现渠道商列表页（分页 + 关键字搜索 + 状态筛选）
-- [ ] 实现渠道商创建表单（名称/编码/联系人/电话/地址/类型）
-- [ ] 实现渠道商详情页，包含 Tab 页签：
+- [x] 创建渠道 API 层（src/api/channel.ts）
+- [x] 实现渠道商列表页（分页 + 关键字搜索 + 状态筛选）
+- [x] 实现渠道商创建表单（名称/编码/联系人/电话/地址/类型）
+- [x] 实现渠道商详情页，包含 Tab 页签：
   - 基本信息 Tab：渠道商详情 + 编辑 + 状态切换
   - 账号管理 Tab：账号列表 CRUD + 状态切换
   - 产品授权 Tab：已授权产品列表 + 授权操作（选择产品 + 首年费率 + 续期费率） + 撤销授权
-- [ ] 渠道商状态标签（启用/停用/冻结）
-- [ ] 配置路由：/channel、/channel/create、/channel/:id
+- [x] 渠道商状态标签（启用/停用/冻结）
+- [x] 配置路由：/channel、/channel/create、/channel/:id
 
 ---
 
@@ -585,20 +585,20 @@ Covex 管理平台
 
 > 依赖：F3 ~ F14 | 验收：仪表盘数据正确展示 + 所有页面权限控制生效 + 响应式布局正常
 
-- [ ] 实现工作台首页仪表盘：
+- [x] 实现工作台首页仪表盘：
   - 统计卡片（产品数/投保单数/保单数/理赔数）
   - 待办事项（待核保/待理赔/待支付数量）
   - 最近操作记录
-- [ ] 实现前端权限控制：
+- [x] 实现前端权限控制：
   - 基于 JWT 解析角色/权限
   - 路由级别权限守卫
   - 按钮级别权限指令（v-permission）
-- [ ] 全局 loading 状态优化
-- [ ] 表格通用功能（列排序/列筛选/导出）
-- [ ] 表单通用功能（必填校验/格式校验/提交防抖）
-- [ ] 消息通知优化（成功/失败/警告统一提示）
-- [ ] 响应式布局适配（侧边栏折叠 + 表格横向滚动）
-- [ ] 字典数据全局缓存（Pinia store 初始化时加载）
+- [x] 全局 loading 状态优化
+- [x] 表格通用功能（列排序/列筛选/导出）
+- [x] 表单通用功能（必填校验/格式校验/提交防抖）
+- [x] 消息通知优化（成功/失败/警告统一提示）
+- [x] 响应式布局适配（侧边栏折叠 + 表格横向滚动）
+- [x] 字典数据全局缓存（Pinia store 初始化时加载）
 
 ---
 

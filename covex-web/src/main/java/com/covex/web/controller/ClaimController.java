@@ -1,6 +1,7 @@
 package com.covex.web.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.covex.common.annotation.RequiresPermission;
 import com.covex.common.result.Result;
 import com.covex.service.dto.ClaimReviewDTO;
 import com.covex.service.dto.InvestigationResultDTO;
@@ -55,6 +56,7 @@ public class ClaimController {
         return Result.ok(claimService.assignHandler(id));
     }
 
+    @RequiresPermission(code = "claim:review")
     @Operation(summary = "提交审核")
     @PostMapping("/{id}/review")
     public Result<ClaimReviewEntity> submitReview(@PathVariable Long id,
