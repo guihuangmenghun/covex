@@ -3,7 +3,7 @@
 > **开源保险核心平台**，覆盖产品配置 → 投保 → 核保 → 出单 → 理赔 → 佣金 → 保全全链路。
 > 基于 Spring Boot 3 + Vue 3 微服务架构，内置可配置规则引擎。
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4-green.svg)](https://spring.io/projects/spring-boot)
 [![Vue](https://img.shields.io/badge/Vue-3.5-brightgreen.svg)](https://vuejs.org/)
@@ -212,7 +212,7 @@ Qoder CN 是一款基于 VS Code 架构的独立桌面 IDE，具备完整的 AI 
 
 ## 许可证
 
-本项目基于 [Apache License 2.0](LICENSE) 开源许可证发布。
+本项目基于 [GNU AGPL v3.0](LICENSE) 开源许可证发布。
 
 ---
 
