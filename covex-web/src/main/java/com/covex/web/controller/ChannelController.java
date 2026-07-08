@@ -59,6 +59,7 @@ public class ChannelController {
         return Result.ok(channelService.updateChannel(id, entity));
     }
 
+    @RequiresPermission(code = "channel:approve")
     @Operation(summary = "更新渠道商状态")
     @PutMapping("/{id}/status")
     public Result<ChannelEntity> updateStatus(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
@@ -67,6 +68,20 @@ public class ChannelController {
             return Result.fail("缺少 status 参数");
         }
         return Result.ok(channelService.updateStatus(id, newStatus));
+    }
+
+    @RequiresPermission(code = "channel:approve")
+    @Operation(summary = "审核通过渠道商")
+    @PostMapping("/{id}/approve")
+    public Result<ChannelEntity> approve(@PathVariable Long id) {
+        return Result.ok(channelService.updateStatus(id, 2));
+    }
+
+    @RequiresPermission(code = "channel:approve")
+    @Operation(summary = "驳回渠道商")
+    @PostMapping("/{id}/reject")
+    public Result<ChannelEntity> reject(@PathVariable Long id, @RequestBody(required = false) Map<String, String> body) {
+        return Result.ok(channelService.updateStatus(id, 5));
     }
 
     @Operation(summary = "授权产品")

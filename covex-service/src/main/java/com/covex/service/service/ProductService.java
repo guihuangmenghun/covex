@@ -221,8 +221,7 @@ public class ProductService {
     // ========== 状态机 ==========
 
     /**
-     * 发布产品（草稿→待审批→已发布）
-     * 简化实现：草稿直接发布（跳过审批）或按状态机流转
+     * 提交审批（草稿→待审批，或驳回→重新提交）
      */
     @Transactional(rollbackFor = Exception.class)
     public ProductEntity publishProduct(Long id) {
@@ -234,36 +233,52 @@ public class ProductService {
         Integer currentStatus = existing.getVersionStatus();
 
         // 草稿 → 待审批
-        if (currentStatus == 1) {
+        if (currentStatus == 1 || currentStatus == 5) {
             updateVersionStatus(id, 2);
-            log.info("Product submitted for approval: id={}", id);
+            log.info("Product submitted for approval: id={}, from={}", id, currentStatus);
             changelogService.logChange(existing.getTenantId(), id, 3,
-                    "product", id, "version_status", "1", "2", "system", "提交审批");
-
-            // 自动审批通过：待审批 → 已发布
-            updateVersionStatus(id, 3);
-            log.info("Product published: id={}", id);
-            changelogService.logChange(existing.getTenantId(), id, 3,
-                    "product", id, "version_status", "2", "3", "system", "审批通过并发布");
-
+                    "product", id, "version_status", String.valueOf(currentStatus), "2", "system", "提交审批");
             return productMapper.selectById(id);
         }
 
-        // 审批驳回 → 草稿（需要先回到草稿再重新提交）
-        if (currentStatus == 5) {
-            throw new BizException("审批驳回的产品需要先编辑后重新提交");
-        }
+        throw new BizException("当前状态不可提交审批: " + statusName(currentStatus));
+    }
 
-        // 尝试状态机流转
-        Set<Integer> allowed = VALID_TRANSITIONS.getOrDefault(currentStatus, Set.of());
-        if (!allowed.contains(3)) {
-            throw new BizException("当前状态不可发布: " + statusName(currentStatus));
+    /**
+     * 审批通过（待审批→已发布）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public ProductEntity approveProduct(Long id) {
+        ProductEntity existing = productMapper.selectById(id);
+        if (existing == null) {
+            throw new BizException(404, "产品不存在: " + id);
         }
-
+        if (existing.getVersionStatus() != 2) {
+            throw new BizException("只有待审批状态可审批通过，当前: " + statusName(existing.getVersionStatus()));
+        }
         updateVersionStatus(id, 3);
+        log.info("Product approved: id={}", id);
         changelogService.logChange(existing.getTenantId(), id, 3,
-                "product", id, "version_status", String.valueOf(currentStatus), "3", "system", "发布");
+                "product", id, "version_status", "2", "3", "system", "审批通过并发布");
+        return productMapper.selectById(id);
+    }
 
+    /**
+     * 审批驳回（待审批→驳回）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public ProductEntity rejectProduct(Long id) {
+        ProductEntity existing = productMapper.selectById(id);
+        if (existing == null) {
+            throw new BizException(404, "产品不存在: " + id);
+        }
+        if (existing.getVersionStatus() != 2) {
+            throw new BizException("只有待审批状态可驳回，当前: " + statusName(existing.getVersionStatus()));
+        }
+        updateVersionStatus(id, 5);
+        log.info("Product rejected: id={}", id);
+        changelogService.logChange(existing.getTenantId(), id, 3,
+                "product", id, "version_status", "2", "5", "system", "审批驳回");
         return productMapper.selectById(id);
     }
 

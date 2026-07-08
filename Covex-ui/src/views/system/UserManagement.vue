@@ -2,7 +2,7 @@
   <div>
     <div style="display: flex; justify-content: space-between; margin-bottom: 16px">
       <h2 style="margin: 0">用户管理</h2>
-      <el-button type="primary" :icon="Plus" @click="openAddDialog">新建用户</el-button>
+      <el-button v-if="isAdmin" type="primary" :icon="Plus" @click="openAddDialog">新建用户</el-button>
     </div>
 
     <!-- 搜索栏 -->
@@ -43,11 +43,13 @@
         </el-table-column>
         <el-table-column label="操作" width="280" align="center">
           <template #default="{ row }">
-            <el-button size="small" type="primary" link @click="openEditDialog(row)">编辑</el-button>
-            <el-button size="small" :type="row.status === 1 ? 'warning' : 'success'" link @click="handleToggleStatus(row)">
-              {{ row.status === 1 ? '停用' : '启用' }}
-            </el-button>
-            <el-button size="small" type="primary" link @click="openRoleDialog(row)">分配角色</el-button>
+            <template v-if="isAdmin">
+              <el-button size="small" type="primary" link @click="openEditDialog(row)">编辑</el-button>
+              <el-button size="small" :type="row.status === 1 ? 'warning' : 'success'" link @click="handleToggleStatus(row)">
+                {{ row.status === 1 ? '停用' : '启用' }}
+              </el-button>
+              <el-button size="small" type="primary" link @click="openRoleDialog(row)">分配角色</el-button>
+            </template>
             <el-button size="small" type="info" link @click="viewPermissions(row)">查看权限</el-button>
           </template>
         </el-table-column>
@@ -90,6 +92,22 @@
             <el-option label="普通用户" :value="2" />
             <el-option label="渠道用户" :value="3" />
           </el-select>
+        </el-form-item>
+        <el-form-item v-if="!isEdit" label="角色模板" prop="initialRole">
+          <el-select v-model="form.initialRole" placeholder="选择角色" style="width: 100%">
+            <el-option-group v-for="group in roleGroups" :key="group.label" :label="group.label">
+              <el-option
+                v-for="r in group.roles"
+                :key="r.code"
+                :label="r.name"
+                :value="r.code"
+                :disabled="r.code === 'sub_admin' && !isAdmin"
+              />
+            </el-option-group>
+          </el-select>
+          <div v-if="form.initialRole && roleDescMap[form.initialRole]" style="color: #909399; font-size: 12px; margin-top: 4px">
+            {{ roleDescMap[form.initialRole] }}
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -145,6 +163,53 @@ import {
   assignRoles, getUserRoles, getUserPermissions, getRoleList,
 } from '@/api/user'
 import type { User, Role, Permission } from '@/types'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+const isAdmin = computed(() => userStore.roles.includes('admin'))
+
+// 13 角色分 4 组
+const roleGroups = [
+  { label: '系统管理组', roles: [
+    { code: 'admin', name: '管理员' },
+    { code: 'sub_admin', name: '副管理员' },
+  ]},
+  { label: '产品精算组', roles: [
+    { code: 'product_mgr', name: '产品经理' },
+    { code: 'actuary', name: '精算师' },
+  ]},
+  { label: '销售服务组', roles: [
+    { code: 'channel_mgr', name: '渠道经理' },
+    { code: 'agent', name: '代理人' },
+    { code: 'service_rep', name: '客服录入员' },
+  ]},
+  { label: '核保核赔组', roles: [
+    { code: 'underwriter', name: '核保员' },
+    { code: 'conservation', name: '保全专员' },
+    { code: 'claim_handler', name: '理赔员' },
+    { code: 'investigator', name: '调查员' },
+  ]},
+  { label: '后台支撑组', roles: [
+    { code: 'finance', name: '财务人员' },
+    { code: 'compliance', name: '合规人员' },
+  ]},
+]
+
+const roleDescMap: Record<string, string> = {
+  admin: '超级管理员，拥有全部权限',
+  sub_admin: '副管理员，可查看系统配置但不可创建用户',
+  product_mgr: '负责产品创建与配置',
+  actuary: '负责费率表设计与规则配置',
+  channel_mgr: '负责渠道商管理与佣金',
+  agent: '负责投保单录入和客户管理',
+  service_rep: '负责客户信息录入，仅看自己的数据',
+  underwriter: '负责投保单核保审批',
+  conservation: '负责保单保全和续期管理',
+  claim_handler: '负责理赔案件处理与审核',
+  investigator: '负责理赔案件调查取证',
+  finance: '负责佣金结算和财务报表',
+  compliance: '负责产品合规审核和监管报告',
+}
 
 // ====== 列表状态 ======
 const loading = ref(false)
@@ -168,6 +233,7 @@ const form = ref({
   phone: '',
   email: '',
   userType: 2,
+  initialRole: '',
 })
 
 const formRules: FormRules = {
@@ -242,7 +308,7 @@ function resetSearch() {
 function openAddDialog() {
   isEdit.value = false
   editingId.value = null
-  form.value = { username: '', password: '', realName: '', phone: '', email: '', userType: 2 }
+  form.value = { username: '', password: '', realName: '', phone: '', email: '', userType: 2, initialRole: '' }
   dialogVisible.value = true
 }
 
@@ -256,6 +322,7 @@ function openEditDialog(row: User) {
     phone: row.phone || '',
     email: row.email || '',
     userType: row.userType,
+    initialRole: '',
   }
   dialogVisible.value = true
 }
@@ -267,12 +334,24 @@ async function handleSubmit() {
   submitLoading.value = true
   try {
     if (isEdit.value && editingId.value) {
-      const { password: _p, ...rest } = form.value
+      const { password: _p, initialRole: _r, ...rest } = form.value
       await updateUser(editingId.value, rest)
       ElMessage.success('更新成功')
     } else {
-      await createUser(form.value)
+      const { initialRole, ...userData } = form.value
+      const res = await createUser(userData)
       ElMessage.success('创建成功')
+      // 创建后自动分配角色
+      if (initialRole && res.data?.id) {
+        try {
+          const rolesRes = await getRoleList()
+          const allRolesList = rolesRes.data || []
+          const matchedRole = allRolesList.find((r: Role) => r.roleCode === initialRole)
+          if (matchedRole) {
+            await assignRoles(res.data.id, [matchedRole.id])
+          }
+        } catch { /* role assignment failed, user can assign manually */ }
+      }
     }
     dialogVisible.value = false
     await loadUsers()

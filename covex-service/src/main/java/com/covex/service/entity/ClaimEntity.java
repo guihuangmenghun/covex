@@ -1,5 +1,6 @@
 package com.covex.service.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.covex.common.entity.BaseEntity;
 import lombok.Data;
@@ -32,4 +33,12 @@ public class ClaimEntity extends BaseEntity {
     private String claimHandler;
     private LocalDateTime reportedAt;
     private LocalDateTime closedAt;
+
+    // ====== 虚拟字段（不映射数据库列，Service 层填充） ======
+    @TableField(exist = false)
+    private String policyNo;
+    @TableField(exist = false)
+    private String coverageName;
+    @TableField(exist = false)
+    private String reporterName;
 }

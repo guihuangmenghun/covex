@@ -69,17 +69,14 @@ public class PremiumCalculationService {
 
                 BigDecimal sumInsured = new BigDecimal(sumInsuredObj.toString());
 
-                // 尝试使用 Aviator 表达式计算保费
+                // 使用 Aviator 表达式计算保费
                 BigDecimal premium = calculateWithAviator(proposal, coverage, sumInsured);
                 totalPremium = totalPremium.add(premium);
             }
         }
 
         if (totalPremium.compareTo(BigDecimal.ZERO) == 0) {
-            // 默认保费计算：保额 * 0.003（千分之三费率）
-            totalPremium = proposal.getTotalSumInsured() != null
-                    ? proposal.getTotalSumInsured().multiply(new BigDecimal("0.003")).setScale(2, RoundingMode.HALF_UP)
-                    : BigDecimal.ZERO;
+            throw new BizException("保费计算结果为零，请检查保障责任和费率表配置");
         }
 
         // 更新投保单保费
@@ -90,40 +87,50 @@ public class PremiumCalculationService {
         return totalPremium;
     }
 
+    @SuppressWarnings("unchecked")
     private BigDecimal calculateWithAviator(ProposalEntity proposal, Map<String, Object> coverage, BigDecimal sumInsured) {
-        try {
-            // 尝试查费率表
-            String rateTableCode = "DEFAULT_RATE";
-            String rateTableVersion = "1.0.0";
-            String dimensionKey = "default";
+        // 从产品快照获取费率表编码
+        String rateTableCode = "DEFAULT_RATE";
+        String rateTableVersion = "1.0.0";
+        String dimensionKey = "default";
 
-            BigDecimal rate;
-            try {
-                rate = rateTableService.queryRate(rateTableCode, rateTableVersion, dimensionKey);
-            } catch (Exception e) {
-                // 费率表不存在，使用默认费率
-                rate = new BigDecimal("0.003");
+        // 尝试从产品快照 attributes 中获取费率表信息
+        if (proposal.getProductSnapshot() instanceof Map) {
+            Map<String, Object> snapshot = (Map<String, Object>) proposal.getProductSnapshot();
+            Object attrs = snapshot.get("attributes");
+            if (attrs instanceof Map) {
+                Map<String, Object> attributes = (Map<String, Object>) attrs;
+                if (attributes.get("rate_table_code") != null) {
+                    rateTableCode = attributes.get("rate_table_code").toString();
+                }
+                if (attributes.get("rate_table_version") != null) {
+                    rateTableVersion = attributes.get("rate_table_version").toString();
+                }
             }
-
-            // 构建 Aviator 环境
-            Map<String, Object> env = new HashMap<>();
-            env.put("sumInsured", sumInsured);
-            env.put("rate", rate);
-
-            // Aviator 表达式
-            String expression = "sumInsured * rate";
-            Object result = aviator.execute(expression, env);
-
-            if (result instanceof BigDecimal) {
-                return (BigDecimal) result;
-            } else if (result instanceof Number) {
-                return BigDecimal.valueOf(((Number) result).doubleValue()).setScale(2, RoundingMode.HALF_UP);
-            }
-
-            return sumInsured.multiply(rate).setScale(2, RoundingMode.HALF_UP);
-        } catch (Exception e) {
-            log.warn("Aviator calculation failed, using fallback: {}", e.getMessage());
-            return sumInsured.multiply(new BigDecimal("0.003")).setScale(2, RoundingMode.HALF_UP);
         }
+
+        BigDecimal rate;
+        try {
+            rate = rateTableService.queryRate(rateTableCode, rateTableVersion, dimensionKey);
+        } catch (Exception e) {
+            throw new BizException("产品未配置费率表或费率查询失败: " + rateTableCode + " v" + rateTableVersion);
+        }
+
+        // 构建 Aviator 环境
+        Map<String, Object> env = new HashMap<>();
+        env.put("sumInsured", sumInsured);
+        env.put("rate", rate);
+
+        // Aviator 表达式
+        String expression = "sumInsured * rate";
+        Object result = aviator.execute(expression, env);
+
+        if (result instanceof BigDecimal) {
+            return (BigDecimal) result;
+        } else if (result instanceof Number) {
+            return BigDecimal.valueOf(((Number) result).doubleValue()).setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return sumInsured.multiply(rate).setScale(2, RoundingMode.HALF_UP);
     }
 }

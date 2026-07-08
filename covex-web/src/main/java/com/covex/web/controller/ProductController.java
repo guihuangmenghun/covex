@@ -79,10 +79,24 @@ public class ProductController {
     }
 
     @RequiresPermission(code = "product:publish")
-    @Operation(summary = "发布产品")
+    @Operation(summary = "提交审批")
     @PutMapping("/{id}/publish")
     public Result<ProductEntity> publish(@PathVariable Long id) {
         return Result.ok(productService.publishProduct(id));
+    }
+
+    @RequiresPermission(code = "product:approve")
+    @Operation(summary = "审批通过")
+    @PutMapping("/{id}/approve")
+    public Result<ProductEntity> approve(@PathVariable Long id) {
+        return Result.ok(productService.approveProduct(id));
+    }
+
+    @RequiresPermission(code = "product:approve")
+    @Operation(summary = "审批驳回")
+    @PutMapping("/{id}/reject")
+    public Result<ProductEntity> reject(@PathVariable Long id) {
+        return Result.ok(productService.rejectProduct(id));
     }
 
     @Operation(summary = "冻结产品")

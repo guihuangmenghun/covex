@@ -50,5 +50,9 @@ login_*.png
 update_plan.js
 startup.log
 
+# === Local dev scripts (contain hardcoded paths) ===
+startup.ps1
+shutdown.ps1
+
 # === Qoder CN ===
 .qoder/

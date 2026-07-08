@@ -161,6 +161,8 @@ export interface Product extends BaseEntity {
   capabilities: Record<string, any> | null
   attributes: Record<string, any> | null
   parentVersionId: number | null
+  templateSource: number | null
+  templateRefId: number | null
 }
 
 export interface ProductCoverage extends BaseEntity {
@@ -243,6 +245,26 @@ export interface ProductChangelog {
   operator: string
   operatedAt: string
   remark: string | null
+}
+
+// ============ 产品模板 ============
+
+export interface ProductTemplate extends BaseEntity {
+  templateCode: string
+  templateName: string
+  templateDesc: string | null
+  productType: number
+  icon: string | null
+  sortOrder: number
+  isActive: number
+  templateData: Record<string, any>
+  paramSchema: Record<string, any>
+}
+
+export interface FromTemplateRequest {
+  templateCode: string
+  tenantId?: number
+  params: Record<string, any>
 }
 
 // ============ 费率表 ============

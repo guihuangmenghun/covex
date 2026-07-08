@@ -402,7 +402,14 @@ async function handleCreate() {
 
 async function loadProduct() {
   productLoading.value = true
-  try { const res = await getProductById(productId.value); product.value = res.data || ({} as Product) } catch { /* handled */ } finally { productLoading.value = false }
+  try {
+    const res = await getProductById(productId.value)
+    const detail = (res.data || {}) as any
+    product.value = detail.product || ({} as Product)
+    if (detail.coverages) { coverages.value = detail.coverages; loadedTabs.add('coverage') }
+    if (detail.premiums) { premiums.value = detail.premiums; loadedTabs.add('premium') }
+    if (detail.rules) { rules.value = detail.rules; loadedTabs.add('rule') }
+  } catch { /* handled */ } finally { productLoading.value = false }
 }
 
 // 编辑

@@ -44,17 +44,20 @@ public class PolicyService {
     private final PolicyCoverageMapper policyCoverageMapper;
     private final PolicyPremiumMapper policyPremiumMapper;
     private final ProposalMapper proposalMapper;
+    private final CustomerMapper customerMapper;
     private final FlowExecutor flowExecutor;
 
     public PolicyService(PolicyMapper policyMapper,
                          PolicyCoverageMapper policyCoverageMapper,
                          PolicyPremiumMapper policyPremiumMapper,
                          ProposalMapper proposalMapper,
+                         CustomerMapper customerMapper,
                          FlowExecutor flowExecutor) {
         this.policyMapper = policyMapper;
         this.policyCoverageMapper = policyCoverageMapper;
         this.policyPremiumMapper = policyPremiumMapper;
         this.proposalMapper = proposalMapper;
+        this.customerMapper = customerMapper;
         this.flowExecutor = flowExecutor;
     }
 
@@ -108,6 +111,7 @@ public class PolicyService {
         if (policy == null) {
             throw new BizException(404, "保单不存在: " + id);
         }
+        enrichPolicyNames(List.of(policy));
 
         Map<String, Object> detail = new HashMap<>();
         detail.put("policy", policy);
@@ -141,7 +145,9 @@ public class PolicyService {
             wrapper.eq(PolicyEntity::getApplicantId, applicantId);
         }
         wrapper.orderByDesc(PolicyEntity::getCreatedAt);
-        return policyMapper.selectPage(new Page<>(page, size), wrapper);
+        Page<PolicyEntity> result = policyMapper.selectPage(new Page<>(page, size), wrapper);
+        enrichPolicyNames(result.getRecords());
+        return result;
     }
 
     /**
@@ -178,5 +184,25 @@ public class PolicyService {
             case 3 -> "终止";
             default -> "未知(" + status + ")";
         };
+    }
+
+    // ========== 名称解析 ==========
+
+    private void enrichPolicyNames(List<PolicyEntity> policies) {
+        if (policies == null || policies.isEmpty()) return;
+
+        List<Long> customerIds = policies.stream()
+                .flatMap(p -> java.util.stream.Stream.of(p.getApplicantId(), p.getInsuredId()))
+                .filter(id -> id != null).distinct().toList();
+        Map<Long, String> nameMap = new java.util.HashMap<>();
+        if (!customerIds.isEmpty()) {
+            customerMapper.selectBatchIds(customerIds)
+                    .forEach(c -> nameMap.put(c.getId(), c.getCustomerName()));
+        }
+
+        for (PolicyEntity p : policies) {
+            if (p.getApplicantId() != null) p.setApplicantName(nameMap.get(p.getApplicantId()));
+            if (p.getInsuredId() != null) p.setInsuredName(nameMap.get(p.getInsuredId()));
+        }
     }
 }

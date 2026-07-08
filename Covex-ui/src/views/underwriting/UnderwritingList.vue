@@ -26,7 +26,7 @@
         <el-table-column label="产品" min-width="160">
           <template #default="{ row }">{{ row.productSnapshot?.productName || '-' }}</template>
         </el-table-column>
-        <el-table-column prop="applicantId" label="投保人ID" width="100" align="center" />
+        <el-table-column prop="applicantName" label="投保人" min-width="100" align="center" />
         <el-table-column prop="totalSumInsured" label="总保额" width="130" align="right">
           <template #default="{ row }">{{ formatMoney(row.totalSumInsured) }}</template>
         </el-table-column>

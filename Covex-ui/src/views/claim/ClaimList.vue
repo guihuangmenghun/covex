@@ -29,7 +29,7 @@
 
       <el-table :data="claims" stripe border v-loading="loading">
         <el-table-column prop="claimNo" label="理赔号" width="180" />
-        <el-table-column prop="policyId" label="保单ID" width="90" align="center" />
+        <el-table-column prop="policyNo" label="保单号" min-width="140" align="center" />
         <el-table-column prop="accidentDate" label="出险日期" width="120" />
         <el-table-column prop="accidentType" label="出险原因" width="120" />
         <el-table-column prop="claimAmount" label="理赔金额" width="130" align="right">

@@ -10,6 +10,8 @@ import type {
   ProductDocument,
   ProductRiderRel,
   ProductChangelog,
+  ProductTemplate,
+  FromTemplateRequest,
 } from '@/types'
 
 // ============ 产品 ============
@@ -162,4 +164,18 @@ export function getRiderList(productId: number) {
 
 export function deleteRider(productId: number, relId: number) {
   return request.delete<any, Result<void>>(`/product/${productId}/rider/${relId}`)
+}
+
+// ============ 产品模板 ============
+
+export function getTemplateList(tenantId = 0) {
+  return request.get<any, Result<ProductTemplate[]>>('/product-template', { params: { tenantId } })
+}
+
+export function getTemplateDetail(code: string) {
+  return request.get<any, Result<ProductTemplate>>(`/product-template/${code}`)
+}
+
+export function createProductFromTemplate(data: FromTemplateRequest) {
+  return request.post<any, Result<Record<string, any>>>('/product-template/create-product', data)
 }

@@ -64,6 +64,7 @@ public class CommissionController {
         return Result.ok(commissionService.getMonthlySummary(channelId, yearMonth));
     }
 
+    @RequiresPermission(code = "commission:pay")
     @Operation(summary = "确认支付")
     @PutMapping("/confirm")
     public Result<CommissionEntity> confirm(@RequestBody Map<String, Long> body) {
@@ -72,5 +73,16 @@ public class CommissionController {
             return Result.fail("缺少 commissionId 参数");
         }
         return Result.ok(commissionService.confirmSettle(commissionId));
+    }
+
+    @RequiresPermission(code = "commission:pay")
+    @Operation(summary = "驳回佣金结算")
+    @PutMapping("/reject")
+    public Result<CommissionEntity> reject(@RequestBody Map<String, Long> body) {
+        Long commissionId = body.get("commissionId");
+        if (commissionId == null) {
+            return Result.fail("缺少 commissionId 参数");
+        }
+        return Result.ok(commissionService.rejectSettle(commissionId));
     }
 }

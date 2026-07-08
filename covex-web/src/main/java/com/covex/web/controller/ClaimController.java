@@ -64,6 +64,15 @@ public class ClaimController {
         return Result.ok(claimService.submitReview(id, dto));
     }
 
+    @RequiresPermission(code = "claim:approve")
+    @Operation(summary = "主管审批")
+    @PostMapping("/{id}/supervisor-approve")
+    public Result<ClaimEntity> supervisorApprove(@PathVariable Long id,
+                                                  @RequestBody Map<String, BigDecimal> body) {
+        BigDecimal approvedAmount = body.get("approvedAmount");
+        return Result.ok(claimService.supervisorApprove(id, approvedAmount));
+    }
+
     @Operation(summary = "赔付计算")
     @PostMapping("/{id}/calculate")
     public Result<BigDecimal> calculate(@PathVariable Long id) {

@@ -40,4 +40,10 @@ public class PolicyEntity extends BaseEntity {
 
     @TableField(typeHandler = JacksonTypeHandler.class)
     private Object beneficiaries;
+
+    // ====== 虚拟字段（不映射数据库列，Service 层填充） ======
+    @TableField(exist = false)
+    private String applicantName;
+    @TableField(exist = false)
+    private String insuredName;
 }

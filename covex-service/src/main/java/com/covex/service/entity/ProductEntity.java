@@ -42,4 +42,6 @@ public class ProductEntity extends BaseEntity {
     private Map<String, Object> attributes;
 
     private Long parentVersionId;
+    private Integer templateSource;
+    private Long templateRefId;
 }

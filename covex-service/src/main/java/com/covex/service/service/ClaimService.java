@@ -37,6 +37,7 @@ public class ClaimService {
     private final ClaimReviewMapper claimReviewMapper;
     private final PolicyMapper policyMapper;
     private final PolicyCoverageMapper policyCoverageMapper;
+    private final CustomerMapper customerMapper;
     private final FlowExecutor flowExecutor;
     private final StringRedisTemplate redisTemplate;
 
@@ -44,12 +45,14 @@ public class ClaimService {
                         ClaimReviewMapper claimReviewMapper,
                         PolicyMapper policyMapper,
                         PolicyCoverageMapper policyCoverageMapper,
+                        CustomerMapper customerMapper,
                         FlowExecutor flowExecutor,
                         StringRedisTemplate redisTemplate) {
         this.claimMapper = claimMapper;
         this.claimReviewMapper = claimReviewMapper;
         this.policyMapper = policyMapper;
         this.policyCoverageMapper = policyCoverageMapper;
+        this.customerMapper = customerMapper;
         this.flowExecutor = flowExecutor;
         this.redisTemplate = redisTemplate;
     }
@@ -166,7 +169,9 @@ public class ClaimService {
             wrapper.like(ClaimEntity::getClaimHandler, handler);
         }
         wrapper.orderByDesc(ClaimEntity::getCreatedAt);
-        return claimMapper.selectPage(new Page<>(page, size), wrapper);
+        Page<ClaimEntity> result = claimMapper.selectPage(new Page<>(page, size), wrapper);
+        enrichClaimNames(result.getRecords());
+        return result;
     }
 
     /**
@@ -230,10 +235,17 @@ public class ClaimService {
         if (dto.getReviewResult() != null) {
             switch (dto.getReviewResult()) {
                 case 1, 2 -> {
-                    // 正常赔付/部分赔付 → 保持审核中，等待赔付
-                    claim.setStatus(2);
-                    if (dto.getApprovedAmount() != null) {
-                        claim.setApprovedAmount(dto.getApprovedAmount());
+                    // 正常赔付/部分赔付 — 检查金额权限
+                    BigDecimal amount = dto.getApprovedAmount();
+                    if (amount != null) {
+                        claim.setApprovedAmount(amount);
+                    }
+                    // 金额权限：理赔员上限1万，超出需主管复审
+                    if (amount != null && amount.compareTo(new BigDecimal("10000")) > 0) {
+                        claim.setStatus(10); // 待主管复审
+                        log.info("Claim escalated to supervisor: claimId={}, amount={}", claimId, amount);
+                    } else {
+                        claim.setStatus(2); // 保持审核中，等待赔付
                     }
                 }
                 case 3 -> {
@@ -252,6 +264,37 @@ public class ClaimService {
         log.info("Claim review submitted: claimId={}, result={}, reviewer={}",
                 claimId, dto.getReviewResult(), dto.getReviewer());
         return review;
+    }
+
+    /**
+     * 主管审批（处理待主管复审的案件，主管上限10万，超出需总经理）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public ClaimEntity supervisorApprove(Long claimId, BigDecimal approvedAmount) {
+        ClaimEntity claim = claimMapper.selectById(claimId);
+        if (claim == null) {
+            throw new BizException(404, "理赔案件不存在: " + claimId);
+        }
+        if (claim.getStatus() != 10) {
+            throw new BizException("只有待主管复审的案件可以主管审批，当前状态: " + claim.getStatus());
+        }
+
+        if (approvedAmount != null) {
+            claim.setApprovedAmount(approvedAmount);
+        }
+
+        // 主管权限上限10万，超出继续升级到总经理（暂用状态11）
+        if (approvedAmount != null && approvedAmount.compareTo(new BigDecimal("100000")) > 0) {
+            claim.setStatus(11); // 待总经理审批
+            log.info("Claim escalated to GM: claimId={}, amount={}", claimId, approvedAmount);
+        } else {
+            claim.setStatus(4); // 已赔付
+            log.info("Claim approved by supervisor: claimId={}, amount={}", claimId, approvedAmount);
+        }
+
+        claimMapper.updateById(claim);
+        enrichClaimNames(java.util.List.of(claim));
+        return claim;
     }
 
     /**
@@ -355,10 +398,50 @@ public class ClaimService {
      */
     public Map<String, Object> getClaimDetail(Long id) {
         ClaimEntity claim = getClaimById(id);
+        enrichClaimNames(List.of(claim));
         Map<String, Object> detail = new HashMap<>();
         detail.put("claim", claim);
         detail.put("reviews", getReviews(id));
         return detail;
+    }
+
+    // ========== 名称解析 ==========
+
+    private void enrichClaimNames(List<ClaimEntity> claims) {
+        if (claims == null || claims.isEmpty()) return;
+
+        // 保单号
+        List<Long> policyIds = claims.stream().map(ClaimEntity::getPolicyId)
+                .filter(id -> id != null).distinct().toList();
+        Map<Long, String> policyNoMap = new java.util.HashMap<>();
+        if (!policyIds.isEmpty()) {
+            policyMapper.selectBatchIds(policyIds)
+                    .forEach(p -> policyNoMap.put(p.getId(), p.getPolicyNo()));
+        }
+
+        // 保障名称
+        List<Long> coverageIds = claims.stream().map(ClaimEntity::getCoverageId)
+                .filter(id -> id != null).distinct().toList();
+        Map<Long, String> coverageNameMap = new java.util.HashMap<>();
+        if (!coverageIds.isEmpty()) {
+            policyCoverageMapper.selectBatchIds(coverageIds)
+                    .forEach(c -> coverageNameMap.put(c.getId(), c.getCoverageName()));
+        }
+
+        // 报案人名称
+        List<Long> reporterIds = claims.stream().map(ClaimEntity::getReporterId)
+                .filter(id -> id != null).distinct().toList();
+        Map<Long, String> reporterNameMap = new java.util.HashMap<>();
+        if (!reporterIds.isEmpty()) {
+            customerMapper.selectBatchIds(reporterIds)
+                    .forEach(c -> reporterNameMap.put(c.getId(), c.getCustomerName()));
+        }
+
+        for (ClaimEntity c : claims) {
+            if (c.getPolicyId() != null) c.setPolicyNo(policyNoMap.get(c.getPolicyId()));
+            if (c.getCoverageId() != null) c.setCoverageName(coverageNameMap.get(c.getCoverageId()));
+            if (c.getReporterId() != null) c.setReporterName(reporterNameMap.get(c.getReporterId()));
+        }
     }
 
     // ========== 内部方法 ==========

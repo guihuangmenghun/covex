@@ -14,8 +14,8 @@
       </template>
 
       <el-descriptions :column="3" border>
-        <el-descriptions-item label="保单ID">{{ claim.policyId }}</el-descriptions-item>
-        <el-descriptions-item label="险种ID">{{ claim.coverageId || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="保单号">{{ claim.policyNo || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="保障名称">{{ claim.coverageName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="处理人">{{ claim.claimHandler || '-' }}</el-descriptions-item>
         <el-descriptions-item label="出险日期">{{ claim.accidentDate || '-' }}</el-descriptions-item>
         <el-descriptions-item label="出险原因">{{ claim.accidentType || '-' }}</el-descriptions-item>
@@ -23,7 +23,7 @@
         <el-descriptions-item label="报案描述" :span="3">{{ claim.accidentDesc || '-' }}</el-descriptions-item>
         <el-descriptions-item label="理赔金额">{{ formatMoney(claim.claimAmount) }}</el-descriptions-item>
         <el-descriptions-item label="批准金额">{{ formatMoney(claim.approvedAmount) }}</el-descriptions-item>
-        <el-descriptions-item label="报案人ID">{{ claim.reporterId || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="报案人">{{ claim.reporterName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="报案时间">{{ claim.reportedAt || '-' }}</el-descriptions-item>
         <el-descriptions-item label="结案时间">{{ claim.closedAt || '-' }}</el-descriptions-item>
       </el-descriptions>

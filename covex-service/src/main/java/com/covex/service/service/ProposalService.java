@@ -57,6 +57,7 @@ public class ProposalService {
     private final ProposalMapper proposalMapper;
     private final ProductMapper productMapper;
     private final CustomerService customerService;
+    private final CustomerMapper customerMapper;
     private final CustomerInsuredMapper customerInsuredMapper;
     private final ChannelMapper channelMapper;
     private final UnderwritingRecordMapper uwRecordMapper;
@@ -66,6 +67,7 @@ public class ProposalService {
     public ProposalService(ProposalMapper proposalMapper,
                            ProductMapper productMapper,
                            CustomerService customerService,
+                           CustomerMapper customerMapper,
                            CustomerInsuredMapper customerInsuredMapper,
                            ChannelMapper channelMapper,
                            UnderwritingRecordMapper uwRecordMapper,
@@ -74,6 +76,7 @@ public class ProposalService {
         this.proposalMapper = proposalMapper;
         this.productMapper = productMapper;
         this.customerService = customerService;
+        this.customerMapper = customerMapper;
         this.customerInsuredMapper = customerInsuredMapper;
         this.channelMapper = channelMapper;
         this.uwRecordMapper = uwRecordMapper;
@@ -215,6 +218,7 @@ public class ProposalService {
         if (proposal == null) {
             throw new BizException(404, "投保单不存在: " + id);
         }
+        enrichProposalNames(List.of(proposal));
         return proposal;
     }
 
@@ -234,7 +238,9 @@ public class ProposalService {
             wrapper.and(w -> w.like(ProposalEntity::getProposalNo, keyword));
         }
         wrapper.orderByDesc(ProposalEntity::getCreatedAt);
-        return proposalMapper.selectPage(new Page<>(page, size), wrapper);
+        Page<ProposalEntity> result = proposalMapper.selectPage(new Page<>(page, size), wrapper);
+        enrichProposalNames(result.getRecords());
+        return result;
     }
 
     /**
@@ -335,5 +341,36 @@ public class ProposalService {
             case 8 -> "已撤销";
             default -> "未知(" + status + ")";
         };
+    }
+
+    // ========== 名称解析 ==========
+
+    private void enrichProposalNames(List<ProposalEntity> proposals) {
+        if (proposals == null || proposals.isEmpty()) return;
+
+        // 投保人/被保人名称
+        List<Long> customerIds = proposals.stream()
+                .flatMap(p -> java.util.stream.Stream.of(p.getApplicantId(), p.getInsuredId()))
+                .filter(id -> id != null).distinct().toList();
+        Map<Long, String> nameMap = new java.util.HashMap<>();
+        if (!customerIds.isEmpty()) {
+            customerMapper.selectBatchIds(customerIds)
+                    .forEach(c -> nameMap.put(c.getId(), c.getCustomerName()));
+        }
+
+        // 渠道商名称
+        List<Long> channelIds = proposals.stream().map(ProposalEntity::getChannelId)
+                .filter(id -> id != null).distinct().toList();
+        Map<Long, String> channelNameMap = new java.util.HashMap<>();
+        if (!channelIds.isEmpty()) {
+            channelMapper.selectBatchIds(channelIds)
+                    .forEach(ch -> channelNameMap.put(ch.getId(), ch.getChannelName()));
+        }
+
+        for (ProposalEntity p : proposals) {
+            if (p.getApplicantId() != null) p.setApplicantName(nameMap.get(p.getApplicantId()));
+            if (p.getInsuredId() != null) p.setInsuredName(nameMap.get(p.getInsuredId()));
+            if (p.getChannelId() != null) p.setChannelName(channelNameMap.get(p.getChannelId()));
+        }
     }
 }

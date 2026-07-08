@@ -22,13 +22,13 @@
         <el-descriptions-item label="产品编码">
           {{ proposal.productSnapshot?.productCode || '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="投保人ID">{{ proposal.applicantId }}</el-descriptions-item>
-        <el-descriptions-item label="被保人ID">{{ proposal.insuredId }}</el-descriptions-item>
+        <el-descriptions-item label="投保人">{{ proposal.applicantName || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="被保人">{{ proposal.insuredName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="总保额">{{ formatMoney(proposal.totalSumInsured) }}</el-descriptions-item>
         <el-descriptions-item label="总保费">
           {{ proposal.totalPremium != null ? formatMoney(proposal.totalPremium) : '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="渠道商ID">{{ proposal.channelId || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="渠道商">{{ proposal.channelName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="渠道用户ID">{{ proposal.channelUserId || '-' }}</el-descriptions-item>
         <el-descriptions-item label="提交时间">{{ proposal.submitAt || '-' }}</el-descriptions-item>
         <el-descriptions-item label="操作人">{{ proposal.operator || '-' }}</el-descriptions-item>

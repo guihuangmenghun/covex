@@ -29,14 +29,17 @@ public class ChannelService {
 
     /**
      * 状态机：允许的流转方向
-     * 1-待审核 → 2-已签约 → 3-已暂停 → 4-已终止
-     * 3-已暂停 → 2-已签约（恢复）
+     * 1-待审核 → 2-已签约, 5-已驳回
+     * 2-已签约 → 3-已暂停
+     * 3-已暂停 → 2-已签约（恢复）, 4-已终止
+     * 5-已驳回 → 1-待审核（重新提交）
      */
     private static final Map<Integer, Set<Integer>> VALID_TRANSITIONS = Map.of(
-            1, Set.of(2),
+            1, Set.of(2, 5),
             2, Set.of(3),
             3, Set.of(2, 4),
-            4, Set.of()
+            4, Set.of(),
+            5, Set.of(1)
     );
 
     private final ChannelMapper channelMapper;
@@ -227,6 +230,7 @@ public class ChannelService {
             case 2 -> "已签约";
             case 3 -> "已暂停";
             case 4 -> "已终止";
+            case 5 -> "已驳回";
             default -> "未知(" + status + ")";
         };
     }

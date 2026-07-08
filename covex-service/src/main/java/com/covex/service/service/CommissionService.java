@@ -108,6 +108,7 @@ public class CommissionService {
             throw new BizException("该月份无待结算佣金: " + yearMonth);
         }
 
+        String operator = com.covex.common.util.OperatorContext.getCurrentOperator();
         BigDecimal totalAmount = BigDecimal.ZERO;
         int count = 0;
         for (CommissionEntity c : pendingList) {
@@ -115,12 +116,13 @@ public class CommissionService {
             update.setId(c.getId());
             update.setSettleStatus(2); // 已确认
             update.setSettledAt(LocalDateTime.now());
+            update.setOperator(operator);
             commissionMapper.updateById(update);
             totalAmount = totalAmount.add(c.getCommissionAmount());
             count++;
         }
 
-        log.info("Monthly settle completed: month={}, count={}, total={}", yearMonth, count, totalAmount);
+        log.info("Monthly settle completed: month={}, count={}, total={}, operator={}", yearMonth, count, totalAmount, operator);
 
         Map<String, Object> result = new HashMap<>();
         result.put("yearMonth", yearMonth);
@@ -150,6 +152,29 @@ public class CommissionService {
         commissionMapper.updateById(update);
 
         log.info("Commission confirmed/paid: id={}", commissionId);
+        return commissionMapper.selectById(commissionId);
+    }
+
+    /**
+     * 驳回佣金 — 将已确认的佣金退回待结算
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public CommissionEntity rejectSettle(Long commissionId) {
+        CommissionEntity existing = commissionMapper.selectById(commissionId);
+        if (existing == null) {
+            throw new BizException(404, "佣金记录不存在: " + commissionId);
+        }
+        if (existing.getSettleStatus() != 2) {
+            throw new BizException("佣金非已确认状态，无法驳回");
+        }
+
+        CommissionEntity update = new CommissionEntity();
+        update.setId(commissionId);
+        update.setSettleStatus(4); // 已驳回
+        update.setOperator(com.covex.common.util.OperatorContext.getCurrentOperator());
+        commissionMapper.updateById(update);
+
+        log.info("Commission rejected: id={}", commissionId);
         return commissionMapper.selectById(commissionId);
     }
 
