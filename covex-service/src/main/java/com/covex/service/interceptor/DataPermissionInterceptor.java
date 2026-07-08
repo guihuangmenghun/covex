@@ -5,6 +5,7 @@ import com.covex.service.service.PermissionCacheService;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -74,8 +75,20 @@ public class DataPermissionInterceptor implements InnerInterceptor {
         // 检查是否有 scope_type=2（本部门）
         boolean hasDept = scopes.stream().anyMatch(s -> s.startsWith("2:"));
         if (hasDept) {
-            // 追加部门过滤条件（基于 tenant_id，当前阶段部门=租户）
-            // 多租户拦截器已经追加了 tenant_id 条件，此处无需额外处理
+            // 追加 created_by 过滤条件（当前阶段部门=租户，只看自己创建的数据）
+            String username = auth.getName();
+            String originalSql = boundSql.getSql();
+            if (!originalSql.contains("created_by")) {
+                String newSql = originalSql + " AND created_by = '" + username + "'";
+                try {
+                    java.lang.reflect.Field sqlField = BoundSql.class.getDeclaredField("sql");
+                    sqlField.setAccessible(true);
+                    sqlField.set(boundSql, newSql);
+                    log.debug("Data permission (scope_type=2) applied: created_by='{}'", username);
+                } catch (Exception e) {
+                    log.warn("Failed to modify SQL for data permission: {}", e.getMessage());
+                }
+            }
             return;
         }
 

@@ -57,9 +57,11 @@
           <el-descriptions-item label="更新时间">{{ product.updatedAt }}</el-descriptions-item>
         </el-descriptions>
         <div style="margin-top: 16px; display: flex; gap: 8px">
-          <el-button v-if="product.versionStatus === 0 || product.versionStatus === 3" type="primary" @click="openEditDialog">编辑</el-button>
-          <el-button v-if="product.versionStatus === 0" type="success" @click="handlePublish">发布</el-button>
-          <el-button v-if="product.versionStatus === 1" type="warning" @click="handleFreeze">冻结</el-button>
+          <el-button v-if="product.versionStatus === 1 || product.versionStatus === 5" type="primary" @click="openEditDialog">编辑</el-button>
+          <el-button v-if="product.versionStatus === 1 || product.versionStatus === 5" type="warning" @click="handlePublish">提交审批</el-button>
+          <el-button v-if="product.versionStatus === 2" type="success" @click="handleApprove">审批通过</el-button>
+          <el-button v-if="product.versionStatus === 2" type="danger" @click="handleReject">审批驳回</el-button>
+          <el-button v-if="product.versionStatus === 3" type="warning" @click="handleFreeze">冻结</el-button>
           <el-button type="info" @click="handleClone">克隆</el-button>
         </div>
       </el-card>
@@ -349,7 +351,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import {
-  createProduct, getProductById, updateProduct, cloneProduct, publishProduct, freezeProduct, getProductChangelog,
+  createProduct, getProductById, updateProduct, cloneProduct, publishProduct, freezeProduct, approveProduct, rejectProduct, getProductChangelog,
   getCoverageList, createCoverage, updateCoverage, deleteCoverage, getCoveragePremiums, linkPremium, unlinkPremium,
   getPremiumList, createPremium, updatePremium, deletePremium,
   getRuleList, createRule, updateRule, deleteRule,
@@ -368,7 +370,7 @@ const typeTagMap: Record<number, { label: string; type: string }> = {
   4: { label: '车险', type: 'danger' }, 5: { label: '财产险', type: 'info' }, 6: { label: '责任险', type: '' }, 7: { label: '乘务险', type: 'warning' },
 }
 const vsMap: Record<number, { label: string; type: string }> = {
-  0: { label: '草稿', type: 'info' }, 1: { label: '已发布', type: 'success' }, 2: { label: '已冻结', type: 'danger' }, 3: { label: '已驳回', type: 'warning' },
+  1: { label: '草稿', type: 'info' }, 2: { label: '待审批', type: 'warning' }, 3: { label: '已发布', type: 'success' }, 4: { label: '已冻结', type: 'danger' }, 5: { label: '已驳回', type: 'danger' },
 }
 function changeTypeLabel(t: number) {
   return ({ 1: '创建', 2: '更新', 3: '删除', 4: '发布', 5: '冻结', 6: '克隆' } as Record<number, string>)[t] || '操作'
@@ -418,7 +420,9 @@ const editForm = ref({ productCode: '', productName: '', shortName: '', productT
 const editRules: FormRules = { productName: [{ required: true, message: '请输入', trigger: 'blur' }], productType: [{ required: true, message: '请选择', trigger: 'change' }], version: [{ required: true, message: '请输入', trigger: 'blur' }] }
 function openEditDialog() { editForm.value = { productCode: product.value.productCode, productName: product.value.productName, shortName: product.value.shortName || '', productType: product.value.productType, version: product.value.version }; editDialogVisible.value = true }
 async function handleEditSubmit() { const v = await editFormRef.value?.validate().catch(() => false); if (!v) return; editLoading.value = true; try { await updateProduct(productId.value, editForm.value); ElMessage.success('更新成功'); editDialogVisible.value = false; await loadProduct() } catch {} finally { editLoading.value = false } }
-async function handlePublish() { try { await ElMessageBox.confirm(`确定发布产品「${product.value.productName}」吗？`, '确认', { type: 'warning' }); await publishProduct(productId.value); ElMessage.success('发布成功'); await loadProduct() } catch {} }
+async function handlePublish() { try { await ElMessageBox.confirm(`确定提交审批产品「${product.value.productName}」吗？`, '确认', { type: 'warning' }); await publishProduct(productId.value); ElMessage.success('已提交审批'); await loadProduct() } catch {} }
+async function handleApprove() { try { await ElMessageBox.confirm(`确定审批通过产品「${product.value.productName}」吗？`, '确认', { type: 'success' }); await approveProduct(productId.value); ElMessage.success('审批通过'); await loadProduct() } catch {} }
+async function handleReject() { try { const { value } = await ElMessageBox.prompt('请输入驳回原因', '审批驳回', { confirmButtonText: '驳回', cancelButtonText: '取消', inputPattern: /.+/, inputErrorMessage: '请输入驳回原因' }); await rejectProduct(productId.value); ElMessage.success('已驳回'); await loadProduct() } catch {} }
 async function handleFreeze() { try { await ElMessageBox.confirm(`确定冻结产品「${product.value.productName}」吗？`, '确认', { type: 'warning' }); await freezeProduct(productId.value); ElMessage.success('冻结成功'); await loadProduct() } catch {} }
 async function handleClone() { try { await ElMessageBox.confirm(`确定克隆产品「${product.value.productName}」吗？`, '确认'); await cloneProduct(productId.value); ElMessage.success('克隆成功'); router.push('/product') } catch {} }
 

@@ -24,7 +24,9 @@
           </el-descriptions>
           <div style="margin-top: 16px; display: flex; gap: 8px">
             <el-button type="primary" @click="editDialogVisible = true">编辑</el-button>
-            <el-button type="success" @click="openStatusDialog">切换状态</el-button>
+            <el-button v-if="channel.status === 1" type="success" @click="handleApprove">审核通过</el-button>
+            <el-button v-if="channel.status === 1" type="danger" @click="handleReject">驳回</el-button>
+            <el-button type="warning" @click="openStatusDialog">切换状态</el-button>
           </div>
         </el-tab-pane>
 
@@ -201,7 +203,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import {
-  getChannelById, updateChannel, updateChannelStatus,
+  getChannelById, updateChannel, updateChannelStatus, approveChannel, rejectChannel,
   getChannelUsers, createChannelUser, updateChannelUser, toggleChannelUserStatus,
   getChannelProducts, authorizeProduct, revokeProductAuth,
 } from '@/api/channel'
@@ -268,12 +270,12 @@ function channelTypeLabel(type: number): string {
 }
 
 function statusLabel(status: number): string {
-  const map: Record<number, string> = { 0: '停用', 1: '启用', 2: '冻结' }
+  const map: Record<number, string> = { 0: '停用', 1: '待审核', 2: '已签约', 3: '已终止', 4: '已冻结', 5: '已驳回' }
   return map[status] || '未知'
 }
 
 function statusTagType(status: number): string {
-  const map: Record<number, string> = { 0: 'info', 1: 'success', 2: 'warning' }
+  const map: Record<number, string> = { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger', 4: 'warning', 5: 'danger' }
   return map[status] || 'info'
 }
 
@@ -326,6 +328,24 @@ async function handleStatusChange() {
   } catch { /* handled */ } finally {
     statusLoading.value = false
   }
+}
+
+async function handleApprove() {
+  try {
+    await ElMessageBox.confirm(`确定审核通过渠道商「${channel.value.channelName}」吗？`, '确认', { type: 'success' })
+    await approveChannel(channelId)
+    ElMessage.success('审核通过')
+    await loadChannel()
+  } catch { /* handled */ }
+}
+
+async function handleReject() {
+  try {
+    await ElMessageBox.confirm(`确定驳回渠道商「${channel.value.channelName}」吗？`, '确认驳回', { type: 'warning' })
+    await rejectChannel(channelId)
+    ElMessage.success('已驳回')
+    await loadChannel()
+  } catch { /* handled */ }
 }
 
 async function handleEdit() {

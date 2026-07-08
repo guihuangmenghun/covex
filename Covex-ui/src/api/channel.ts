@@ -31,6 +31,14 @@ export function updateChannelStatus(id: number, status: number) {
   return request.put<any, Result<void>>(`/channel/${id}/status`, { status })
 }
 
+export function approveChannel(id: number) {
+  return request.post<any, Result<void>>(`/channel/${id}/approve`)
+}
+
+export function rejectChannel(id: number) {
+  return request.post<any, Result<void>>(`/channel/${id}/reject`)
+}
+
 export function authorizeProduct(channelId: number, data: ChannelAuthorizeRequest) {
   return request.post<any, Result<void>>(`/channel/${channelId}/authorize`, data)
 }

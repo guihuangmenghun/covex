@@ -48,6 +48,14 @@ export function freezeProduct(id: number) {
   return request.put<any, Result<void>>(`/product/${id}/freeze`)
 }
 
+export function approveProduct(id: number) {
+  return request.put<any, Result<void>>(`/product/${id}/approve`)
+}
+
+export function rejectProduct(id: number) {
+  return request.put<any, Result<void>>(`/product/${id}/reject`)
+}
+
 export function getProductChangelog(id: number) {
   return request.get<any, Result<ProductChangelog[]>>(`/product/${id}/changelog`)
 }
