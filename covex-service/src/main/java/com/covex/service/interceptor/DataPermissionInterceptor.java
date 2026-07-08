@@ -25,6 +25,9 @@ public class DataPermissionInterceptor implements InnerInterceptor {
 
     private static final Logger log = LoggerFactory.getLogger(DataPermissionInterceptor.class);
 
+    /** 防止递归：拦截器内部查询不再触发数据权限 */
+    private static final ThreadLocal<Boolean> SKIP = ThreadLocal.withInitial(() -> false);
+
     private final PermissionCacheService permissionCacheService;
 
     public DataPermissionInterceptor(PermissionCacheService permissionCacheService) {
@@ -34,6 +37,11 @@ public class DataPermissionInterceptor implements InnerInterceptor {
     @Override
     public void beforeQuery(Executor executor, MappedStatement ms, Object parameter,
                             RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
+        // 防重入：如果当前线程正在查询数据范围，跳过
+        if (SKIP.get()) {
+            return;
+        }
+
         // 从 SecurityContext 获取 userId
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof Long)) {
@@ -41,13 +49,16 @@ public class DataPermissionInterceptor implements InnerInterceptor {
         }
         Long userId = (Long) auth.getPrincipal();
 
-        // 获取数据范围
+        // 获取数据范围（标记跳过，防止递归）
         List<String> scopes;
         try {
+            SKIP.set(true);
             scopes = permissionCacheService.getDataScope(userId);
         } catch (Exception e) {
             log.warn("Failed to get data scope for userId={}, skip data permission", userId);
             return;
+        } finally {
+            SKIP.set(false);
         }
 
         if (scopes.isEmpty()) {

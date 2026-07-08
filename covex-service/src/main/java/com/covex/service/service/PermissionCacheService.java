@@ -4,6 +4,7 @@ import com.covex.service.entity.DataScopeEntity;
 import com.covex.service.entity.PermissionEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +32,8 @@ public class PermissionCacheService {
     private final DataScopeService dataScopeService;
 
     public PermissionCacheService(StringRedisTemplate redisTemplate,
-                                  UserService userService,
-                                  DataScopeService dataScopeService) {
+                                  @Lazy UserService userService,
+                                  @Lazy DataScopeService dataScopeService) {
         this.redisTemplate = redisTemplate;
         this.userService = userService;
         this.dataScopeService = dataScopeService;
