@@ -38,6 +38,7 @@
         <el-button v-if="claim.status === 5" type="success" @click="handleProcessPayment">触发赔付</el-button>
         <el-button v-if="claim.status === 6" type="success" @click="handleClose">结案</el-button>
         <el-button v-if="claim.status === 8" type="warning" @click="handleDispute">拒赔申诉</el-button>
+        <el-button v-if="claim.status === 10" type="warning" @click="supervisorDialogVisible = true">主管审批</el-button>
       </div>
     </el-card>
 
@@ -140,6 +141,19 @@
       </template>
     </el-dialog>
 
+    <!-- 主管审批弹窗 -->
+    <el-dialog v-model="supervisorDialogVisible" title="主管审批" width="400px" destroy-on-close>
+      <el-form label-width="100px">
+        <el-form-item label="批准金额">
+          <el-input-number v-model="supervisorAmount" :min="0" :precision="2" style="width: 100%" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="supervisorDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="supervisorLoading" @click="handleSupervisorApprove">确定</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 上传材料弹窗 -->
     <el-dialog v-model="docDialogVisible" title="上传理赔材料" width="500px" destroy-on-close>
       <el-form ref="docFormRef" :model="docForm" :rules="docRules" label-width="100px">
@@ -176,7 +190,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import {
   getClaimById, assignClaim, reviewClaim, calculateClaim,
   investigateClaim, submitInvestigationResult,
-  processClaimPayment, closeClaim, disputeClaim,
+  processClaimPayment, closeClaim, disputeClaim, supervisorApproveClaim,
   getClaimDocuments, uploadClaimDocument,
 } from '@/api/claim'
 import type { Claim, ClaimReview, ClaimDocument } from '@/types'
@@ -227,7 +241,7 @@ function formatMoney(val: number | null | undefined): string {
 }
 
 function getStatusLabel(status: number): string {
-  const map: Record<number, string> = { 1: '已报案', 2: '已分配', 3: '审核中', 4: '调查中', 5: '待赔付', 6: '已赔付', 7: '已结案', 8: '已拒赔', 9: '申诉中' }
+  const map: Record<number, string> = { 1: '已报案', 2: '已分配', 3: '审核中', 4: '调查中', 5: '待赔付', 6: '已赔付', 7: '已结案', 8: '已拒赔', 9: '申诉中', 10: '待主管复审', 11: '待总经理审批' }
   return map[status] || '未知'
 }
 
@@ -306,6 +320,19 @@ async function handleClose() {
 async function handleDispute() {
   try { await ElMessageBox.confirm('确定发起拒赔申诉吗？', '确认', { type: 'warning' }) } catch { return }
   try { await disputeClaim(claimId); ElMessage.success('申诉已发起'); await loadClaim() } catch { /* handled */ }
+}
+
+// 主管审批弹窗
+const supervisorDialogVisible = ref(false)
+const supervisorLoading = ref(false)
+const supervisorAmount = ref<number | null>(null)
+async function handleSupervisorApprove() {
+  if (supervisorAmount.value == null || supervisorAmount.value <= 0) { ElMessage.warning('请输入批准金额'); return }
+  supervisorLoading.value = true
+  try {
+    await supervisorApproveClaim(claimId, supervisorAmount.value)
+    ElMessage.success('主管审批成功'); supervisorDialogVisible.value = false; await loadClaim()
+  } catch { /* handled */ } finally { supervisorLoading.value = false }
 }
 
 async function handleUploadDoc() {

@@ -80,16 +80,25 @@
         <el-table-column prop="settledAt" label="结算时间" width="170">
           <template #default="{ row }">{{ row.settledAt || '-' }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="100" align="center" fixed="right">
+        <el-table-column label="操作" width="160" align="center" fixed="right">
           <template #default="{ row }">
             <el-button
-              v-if="row.settleStatus === 1"
+              v-if="row.settleStatus === 2"
               size="small"
               type="success"
               link
               @click="handleConfirm(row)"
             >
               确认支付
+            </el-button>
+            <el-button
+              v-if="row.settleStatus === 2"
+              size="small"
+              type="danger"
+              link
+              @click="handleReject(row)"
+            >
+              驳回
             </el-button>
           </template>
         </el-table-column>
@@ -187,7 +196,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { getCommissionList, calculateCommission, settleCommission, getCommissionSummary, confirmCommission } from '@/api/commission'
+import { getCommissionList, calculateCommission, settleCommission, getCommissionSummary, confirmCommission, rejectCommission } from '@/api/commission'
 import { getChannelPage } from '@/api/channel'
 import type { Commission, Channel } from '@/types'
 
@@ -245,12 +254,12 @@ function formatMoney(val: number | null | undefined): string {
 }
 
 function getStatusLabel(status: number): string {
-  const map: Record<number, string> = { 0: '待结算', 1: '已结算', 2: '已支付' }
+  const map: Record<number, string> = { 1: '待结算', 2: '已确认', 3: '已支付', 4: '已驳回' }
   return map[status] || '未知'
 }
 
 function getStatusTagType(status: number): string {
-  const map: Record<number, string> = { 0: 'info', 1: 'warning', 2: 'success' }
+  const map: Record<number, string> = { 1: 'info', 2: 'warning', 3: 'success', 4: 'danger' }
   return map[status] || 'info'
 }
 
@@ -342,6 +351,15 @@ async function handleConfirm(row: Commission) {
     await ElMessageBox.confirm('确定确认支付此佣金吗？', '确认', { type: 'info' })
     await confirmCommission(row.id)
     ElMessage.success('确认支付成功')
+    await loadCommissions()
+  } catch { /* cancel or handled */ }
+}
+
+async function handleReject(row: Commission) {
+  try {
+    await ElMessageBox.confirm('确定驳回此佣金吗？', '确认驳回', { type: 'warning' })
+    await rejectCommission(row.id)
+    ElMessage.success('已驳回')
     await loadCommissions()
   } catch { /* cancel or handled */ }
 }

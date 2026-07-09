@@ -65,3 +65,7 @@ export function closeClaim(claimId: number) {
 export function disputeClaim(claimId: number) {
   return request.post<any, Result<Claim>>(`/claim/${claimId}/payment/dispute`)
 }
+
+export function supervisorApproveClaim(id: number, approvedAmount: number) {
+  return request.post<any, Result<Claim>>(`/claim/${id}/supervisor-approve`, { approvedAmount })
+}

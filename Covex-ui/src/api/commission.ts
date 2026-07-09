@@ -33,3 +33,8 @@ export function getCommissionSummary(params: { channelId: number; yearMonth: str
 export function confirmCommission(commissionId: number) {
   return request.put<any, Result<Commission>>('/commission/confirm', { commissionId })
 }
+
+// 驳回佣金
+export function rejectCommission(commissionId: number) {
+  return request.put<any, Result<Commission>>('/commission/reject', { commissionId })
+}
