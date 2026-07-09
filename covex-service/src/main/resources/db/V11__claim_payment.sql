@@ -2,6 +2,8 @@
 -- S14: 赔付支付 + 结案
 
 -- 理赔赔付记录
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS ins_claim_payment (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL DEFAULT 0,

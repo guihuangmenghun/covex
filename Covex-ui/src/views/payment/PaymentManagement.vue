@@ -6,7 +6,7 @@
     <el-card style="margin-bottom: 16px">
       <el-form :inline="true" @submit.prevent="handleQuery">
         <el-form-item label="投保单ID">
-          <el-input-number v-model="proposalId" :min="1" placeholder="输入投保单ID" style="width: 180px" />
+          <el-input v-model="proposalId" placeholder="输入投保单ID" style="width: 180px" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="queryLoading" @click="handleQuery">查询支付记录</el-button>

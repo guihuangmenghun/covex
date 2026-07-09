@@ -4,6 +4,8 @@
 -- ========== 合并：共享字典类型 (16组) ==========
 
 -- period_unit（期间单位）
+SET NAMES utf8mb4;
+
 INSERT INTO ins_dict (tenant_id, dict_type, dict_code, dict_name, sort_order) VALUES
 (0, 'period_unit', '1', '年', 1),
 (0, 'period_unit', '2', '月', 2),

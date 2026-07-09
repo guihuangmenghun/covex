@@ -3,6 +3,8 @@
 -- ============================================================
 
 -- 1. 新增表：ins_product_template
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS ins_product_template (
     id              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
     tenant_id       BIGINT       NOT NULL DEFAULT 0      COMMENT '租户ID（0=系统模板）',

@@ -7,7 +7,6 @@
           <el-button :type="viewMode === 'group' ? 'primary' : 'default'" @click="viewMode = 'group'">模块分组</el-button>
           <el-button :type="viewMode === 'list' ? 'primary' : 'default'" @click="viewMode = 'list'">列表视图</el-button>
         </el-button-group>
-        <el-button type="primary" :icon="Plus" style="margin-left: 8px" @click="openAddDialog">新建权限</el-button>
       </div>
     </div>
 
@@ -17,7 +16,7 @@
         <el-collapse v-model="expandedModules">
           <el-collapse-item v-for="(perms, module) in permissionModules" :key="module" :name="module">
             <template #title>
-              <span style="font-weight: 500">{{ module }}</span>
+              <span style="font-weight: 500">{{ moduleLabelMap[module] || module }}</span>
               <el-tag size="small" type="info" style="margin-left: 8px">{{ perms.length }}</el-tag>
             </template>
             <el-table :data="perms" stripe size="small">
@@ -112,13 +111,31 @@ const formRules: FormRules = {
 
 const moduleOptions = computed(() => Object.keys(permissionModules.value))
 
+// 模块名称中文映射
+const moduleLabelMap: Record<string, string> = {
+  proposal: '投保单',
+  product: '产品',
+  role: '角色',
+  channel: '渠道',
+  claim: '理赔',
+  commission: '佣金',
+  customer: '客户',
+  payment: '支付',
+  policy: '保单',
+  underwriting: '核保',
+  user: '用户',
+  permission: '权限',
+  dict: '字典',
+  system: '系统',
+}
+
 function opTypeLabel(type: string): string {
-  const map: Record<string, string> = { view: '查看', read: '查看', create: '创建', edit: '编辑', update: '编辑', delete: '删除', approve: '审批' }
+  const map: Record<string, string> = { view: '查看', read: '查看', create: '创建', edit: '编辑', update: '编辑', delete: '删除', approve: '审批', publish: '发布', assign_perm: '分配权限', assign_role: '分配角色', review: '审核', pay: '支付', settle: '结算' }
   return map[type] || type
 }
 
 function opTypeTag(type: string): string {
-  const map: Record<string, string> = { view: 'info', read: 'info', create: 'success', edit: 'warning', update: 'warning', delete: 'danger', approve: 'primary' }
+  const map: Record<string, string> = { view: 'info', read: 'info', create: 'success', edit: 'warning', update: 'warning', delete: 'danger', approve: 'primary', publish: 'success', assign_perm: 'primary', assign_role: 'primary', review: 'warning', pay: 'success', settle: 'success' }
   return map[type] || 'info'
 }
 

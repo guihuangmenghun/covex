@@ -1,6 +1,8 @@
 -- Covex 数据字典表
 -- S2: 数据字典服务
 
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `ins_dict` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
     `tenant_id`   BIGINT       NOT NULL DEFAULT 0 COMMENT '租户ID（0=全局）',

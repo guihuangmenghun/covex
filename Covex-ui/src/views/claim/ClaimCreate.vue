@@ -5,7 +5,7 @@
     <el-card style="margin-top: 20px">
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="110px" style="max-width: 650px">
         <el-form-item label="保单ID" prop="policyId">
-          <el-input-number v-model="form.policyId" :min="1" placeholder="输入保单ID" style="width: 100%" />
+          <el-input v-model="form.policyId" placeholder="输入保单ID" style="width: 100%" />
         </el-form-item>
         <el-form-item label="出险日期" prop="accidentDate">
           <el-date-picker v-model="form.accidentDate" type="date" placeholder="选择出险日期" style="width: 100%" value-format="YYYY-MM-DD" />
@@ -31,7 +31,7 @@
           <el-input-number v-model="form.claimAmount" :min="0" :precision="2" :step="1000" style="width: 100%" />
         </el-form-item>
         <el-form-item label="险种ID">
-          <el-input-number v-model="form.coverageId" :min="1" placeholder="保障险种ID（可选）" style="width: 100%" />
+          <el-input v-model="form.coverageId" placeholder="保障险种ID（可选）" style="width: 100%" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="submitLoading" @click="handleSubmit">提交报案</el-button>

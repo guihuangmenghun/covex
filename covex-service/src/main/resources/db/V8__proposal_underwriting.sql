@@ -2,6 +2,8 @@
 -- S9: 承保域
 
 -- 投保单
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS ins_proposal (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL DEFAULT 0,

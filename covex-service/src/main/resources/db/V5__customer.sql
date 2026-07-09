@@ -2,6 +2,8 @@
 -- S4+S5: 客户域（5 张表）
 
 -- 1. 客户主表
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `ins_customer` (
     `id`            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
     `tenant_id`     BIGINT       NOT NULL DEFAULT 0 COMMENT '租户ID',

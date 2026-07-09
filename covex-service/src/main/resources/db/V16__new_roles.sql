@@ -4,6 +4,8 @@
 -- ============================================================
 
 -- 1. 重新编码现有 5 个角色
+SET NAMES utf8mb4;
+
 UPDATE ins_role SET role_code = 'admin',         description = '超级管理员，拥有全部权限'                  WHERE role_code = 'ADMIN';
 UPDATE ins_role SET role_code = 'product_mgr',   role_name = '产品经理',   description = '负责产品创建与配置'      WHERE role_code = 'PRODUCT_MANAGER';
 UPDATE ins_role SET role_code = 'underwriter',    description = '负责投保单核保审批'                      WHERE role_code = 'UNDERWRITER';

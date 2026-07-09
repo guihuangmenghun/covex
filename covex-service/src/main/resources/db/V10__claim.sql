@@ -2,6 +2,8 @@
 -- S13: 理赔案件 + 理赔材料 + 理赔审核
 
 -- 理赔案件
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS ins_claim (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL DEFAULT 0,

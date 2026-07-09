@@ -2,6 +2,8 @@
 -- S6+S7: 渠道域（4 张表）
 
 -- 1. 渠道商
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `ins_channel` (
     `id`              BIGINT        NOT NULL AUTO_INCREMENT COMMENT '主键',
     `tenant_id`       BIGINT        NOT NULL DEFAULT 0 COMMENT '租户ID',

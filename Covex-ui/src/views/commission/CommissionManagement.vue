@@ -23,9 +23,10 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="filterStatus" placeholder="全部状态" clearable style="width: 120px" @change="loadCommissions">
-            <el-option label="待结算" :value="0" />
-            <el-option label="已结算" :value="1" />
-            <el-option label="已支付" :value="2" />
+            <el-option label="待结算" :value="1" />
+            <el-option label="已确认" :value="2" />
+            <el-option label="已支付" :value="3" />
+            <el-option label="已驳回" :value="4" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -64,7 +65,7 @@
           <template #default="{ row }">{{ formatMoney(row.premiumAmount) }}</template>
         </el-table-column>
         <el-table-column prop="commissionRate" label="佣金费率" width="100" align="right">
-          <template #default="{ row }">{{ (row.commissionRate * 100).toFixed(2) }}%</template>
+          <template #default="{ row }">{{ row.commissionRate.toFixed(2) }}%</template>
         </el-table-column>
         <el-table-column prop="commissionAmount" label="佣金金额" width="120" align="right">
           <template #default="{ row }">{{ formatMoney(row.commissionAmount) }}</template>
@@ -82,6 +83,15 @@
         </el-table-column>
         <el-table-column label="操作" width="160" align="center" fixed="right">
           <template #default="{ row }">
+            <el-button
+              v-if="row.settleStatus === 1"
+              size="small"
+              type="info"
+              link
+              disabled
+            >
+              请通过月度结算处理
+            </el-button>
             <el-button
               v-if="row.settleStatus === 2"
               size="small"

@@ -45,6 +45,22 @@
 - 增量迁移：创建新的 `V{N}__xxx.sql` 执行 `UPDATE/INSERT`（已有数据库生效）
 - 前端下拉框、状态标签等显示文本以字典表为准，禁止前端硬编码状态名称
 
+### SQL 字符集规范（强制）
+- **创建 SQL 文件时**：文件头必须添加 `SET NAMES utf8mb4;`
+- **导入 SQL 文件时**：必须指定字符集 `--default-character-set=utf8mb4`
+- 示例：
+  ```sql
+  -- V19__xxx.sql
+  SET NAMES utf8mb4;
+  
+  UPDATE ins_role SET role_name = '管理员' WHERE role_code = 'admin';
+  ```
+  ```bash
+  # 导入 SQL 文件
+  mysql -u root -p covex --default-character-set=utf8mb4 < V19__xxx.sql
+  ```
+- **原因**：避免中文乱码问题（UTF-8 字节被当作 latin1 存储）
+
 ### 禁止组件
 - ❌ Drools / JVS-Rules（用 LiteFlow）
 - ❌ QLExpress / Groovy（用 Aviator）
@@ -94,6 +110,7 @@ updated_at DATETIME
 □ 布尔用 TINYINT(1)？（不是 Y/N）
 □ 规则用 LiteFlow/Aviator？（不是 Drools）
 □ 没使用禁止组件？
+□ SQL 文件头有 SET NAMES utf8mb4？
 □ 需要更新文档？
 ```
 

@@ -3,6 +3,8 @@
 -- =============================================
 
 -- 1. ins_user
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS ins_user (
     id            BIGINT       AUTO_INCREMENT PRIMARY KEY,
     tenant_id     BIGINT       NOT NULL DEFAULT 0,

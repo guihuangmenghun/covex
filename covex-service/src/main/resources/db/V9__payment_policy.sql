@@ -2,6 +2,8 @@
 -- S10: 支付域 + 保单域
 
 -- 支付记录
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS ins_payment (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL DEFAULT 0,

@@ -1,6 +1,8 @@
 -- Covex S8: 产品配置域表结构（10 张新表，ins_dict 已在 V1 创建）
 
 -- 1. 产品主表
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `ins_product` (
     `id`                BIGINT        NOT NULL AUTO_INCREMENT COMMENT '主键',
     `tenant_id`         BIGINT        NOT NULL DEFAULT 0 COMMENT '租户ID',

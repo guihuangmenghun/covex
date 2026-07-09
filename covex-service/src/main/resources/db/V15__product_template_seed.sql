@@ -4,6 +4,8 @@
 -- ============================================================
 
 -- 通用 param_schema（所有模板共用，PM 填写的表单定义）
+SET NAMES utf8mb4;
+
 SET @param_schema = JSON_OBJECT(
   'sections', JSON_ARRAY(
     JSON_OBJECT(
