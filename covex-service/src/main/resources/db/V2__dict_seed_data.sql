@@ -207,7 +207,7 @@ INSERT INTO ins_dict (tenant_id, dict_type, dict_code, dict_name, sort_order) VA
 (0, 'proposal_status', '2', '待核保', 2),
 (0, 'proposal_status', '3', '核保中', 3),
 (0, 'proposal_status', '4', '待支付', 4),
-(0, 'proposal_status', '5', '已支付', 5),
+(0, 'proposal_status', '5', '已支付(待出单)', 5),
 (0, 'proposal_status', '6', '已出单', 6),
 (0, 'proposal_status', '7', '已拒保', 7),
 (0, 'proposal_status', '8', '已撤销', 8);

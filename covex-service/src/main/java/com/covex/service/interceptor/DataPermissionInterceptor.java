@@ -5,8 +5,6 @@ import com.covex.service.service.PermissionCacheService;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
@@ -21,6 +19,10 @@ import java.util.List;
  * 数据权限拦截器 — 根据用户数据范围自动追加 SQL 条件
  * scope_type: 1=全部, 2=本部门, 3=自定义
  * 注册到 MybatisPlusConfig 拦截器链（多租户之后、分页之前）
+ *
+ * 防递归双重保护：
+ * 1. SKIP ThreadLocal — 拦截器内部查询时标记跳过，防止 beforeQuery() 递归
+ * 2. SCOPE_CACHE ThreadLocal — 请求级缓存，避免同一请求内重复查 Redis/DB
  */
 public class DataPermissionInterceptor implements InnerInterceptor {
 
@@ -28,6 +30,19 @@ public class DataPermissionInterceptor implements InnerInterceptor {
 
     /** 防止递归：拦截器内部查询不再触发数据权限 */
     private static final ThreadLocal<Boolean> SKIP = ThreadLocal.withInitial(() -> false);
+
+    /** 请求级数据范围缓存，避免同一请求内重复查 Redis */
+    static final ThreadLocal<java.util.Map<Long, List<String>>> SCOPE_CACHE =
+            ThreadLocal.withInitial(java.util.HashMap::new);
+
+    /**
+     * 清理 ThreadLocal，防止线程池复用时的内存泄漏和数据串扰
+     * 应在每次 HTTP 请求结束时由 DataPermissionCleanupFilter 调用
+     */
+    public static void cleanup() {
+        SKIP.remove();
+        SCOPE_CACHE.remove();
+    }
 
     private final PermissionCacheService permissionCacheService;
 
@@ -50,16 +65,20 @@ public class DataPermissionInterceptor implements InnerInterceptor {
         }
         Long userId = (Long) auth.getPrincipal();
 
-        // 获取数据范围（标记跳过，防止递归）
-        List<String> scopes;
-        try {
-            SKIP.set(true);
-            scopes = permissionCacheService.getDataScope(userId);
-        } catch (Exception e) {
-            log.warn("Failed to get data scope for userId={}, skip data permission", userId);
-            return;
-        } finally {
-            SKIP.set(false);
+        // 使用 ThreadLocal 缓存避免同一请求内重复查 DB/Redis
+        java.util.Map<Long, List<String>> cache = SCOPE_CACHE.get();
+        List<String> scopes = cache.get(userId);
+        if (scopes == null) {
+            try {
+                SKIP.set(true);
+                scopes = permissionCacheService.getDataScope(userId);
+                cache.put(userId, scopes);
+            } catch (Exception e) {
+                log.warn("Failed to get data scope for userId={}, skip data permission", userId);
+                return;
+            } finally {
+                SKIP.set(false);
+            }
         }
 
         if (scopes.isEmpty()) {

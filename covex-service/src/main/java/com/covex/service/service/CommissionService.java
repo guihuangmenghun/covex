@@ -38,6 +38,12 @@ public class CommissionService {
     public CommissionEntity calculateCommission(Long tenantId, Long policyId, Long channelId,
                                                  Long channelUserId, BigDecimal premiumAmount,
                                                  Integer commissionType, BigDecimal commissionRate) {
+        // 无渠道商不算佣金
+        if (channelId == null) {
+            log.info("Skip commission: channelId is null, policyId={}", policyId);
+            return null;
+        }
+
         String commissionNo = policyId + "-" + commissionType;
 
         // Idempotency check

@@ -78,14 +78,19 @@ public class PaymentService {
         payment.setOperator(com.covex.common.util.OperatorContext.getCurrentOperator());
         paymentMapper.insert(payment);
 
-        // 发送 30 分钟延迟消息用于支付超时自动撤销
-        String mqMessage = String.format("paymentId=%d, proposalId=%d", payment.getId(), proposal.getId());
-        rocketMQTemplate.syncSend("PAYMENT_TIMEOUT",
-                MessageBuilder.withPayload(mqMessage).build(),
-                3000, // 发送超时 3s
-                16);  // delayLevel 16 = 30 分钟（RocketMQ 默认延迟级别）
-        log.info("Payment created and timeout MQ sent: paymentNo={}, amount={}, channel={}",
-                payment.getPaymentNo(), payment.getAmount(), dto.getPayChannel());
+        // 发送 30 分钟延迟消息用于支付超时自动撤销（MQ 不可用时仅警告，不影响支付创建）
+        try {
+            String mqMessage = String.format("paymentId=%d, proposalId=%d", payment.getId(), proposal.getId());
+            rocketMQTemplate.syncSend("PAYMENT_TIMEOUT",
+                    MessageBuilder.withPayload(mqMessage).build(),
+                    3000, // 发送超时 3s
+                    16);  // delayLevel 16 = 30 分钟（RocketMQ 默认延迟级别）
+            log.info("Payment created and timeout MQ sent: paymentNo={}, amount={}, channel={}",
+                    payment.getPaymentNo(), payment.getAmount(), dto.getPayChannel());
+        } catch (Exception e) {
+            log.warn("Payment timeout MQ send failed (non-critical): paymentNo={}, error={}",
+                    payment.getPaymentNo(), e.getMessage());
+        }
         return payment;
     }
 
@@ -152,6 +157,15 @@ public class PaymentService {
             proposal.setStatus(5);
             proposalMapper.updateById(proposal);
             log.info("Proposal status → 已支付: proposalId={}", proposal.getId());
+
+            // 发送 PROPOSAL_PAID 消息，异步触发出单链（需求规格 AC-3）
+            try {
+                String mqMessage = String.format("proposalId=%d", proposal.getId());
+                rocketMQTemplate.convertAndSend("PROPOSAL_PAID", mqMessage);
+                log.info("PROPOSAL_PAID MQ sent: proposalId={}", proposal.getId());
+            } catch (Exception e) {
+                log.error("Failed to send PROPOSAL_PAID MQ: proposalId={}, error={}", proposal.getId(), e.getMessage());
+            }
         }
 
         log.info("Payment callback handled: paymentNo={}, payChannelNo={}",

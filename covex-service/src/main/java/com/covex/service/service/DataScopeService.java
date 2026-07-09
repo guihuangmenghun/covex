@@ -61,8 +61,10 @@ public class DataScopeService {
      * 获取角色数据范围
      */
     public List<DataScopeEntity> getDataScopes(Long roleId) {
-        LambdaQueryWrapper<DataScopeEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DataScopeEntity::getRoleId, roleId);
+        // 使用 QueryWrapper（字符串列名）避免 LambdaQueryWrapper 在 OGNL 求值阶段触发 lambda 解析递归
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<DataScopeEntity> wrapper =
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        wrapper.eq("role_id", roleId);
         return dataScopeMapper.selectList(wrapper);
     }
 }

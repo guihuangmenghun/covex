@@ -73,6 +73,13 @@ public class PolicyIssuedConsumer implements RocketMQListener<String> {
         }
 
         // 查渠道产品佣金率
+        // 无渠道商的投保单不计算佣金（直接出单的场景）
+        if (proposal.getChannelId() == null) {
+            log.info("No channel associated, skip commission: policyNo={}, proposalId={}",
+                    policyNo, proposal.getId());
+            return;
+        }
+
         LambdaQueryWrapper<ChannelProductEntity> cpWrapper = new LambdaQueryWrapper<>();
         cpWrapper.eq(ChannelProductEntity::getChannelId, proposal.getChannelId())
                  .eq(ChannelProductEntity::getProductId, proposal.getProductId());

@@ -213,15 +213,36 @@ I want to 看到准确的保费金额并完成支付
 So that 投保流程完成，保单生效
 
 Acceptance Criteria:
+
+AC-1: 保费计算
 Given 投保单核保通过
 When 系统调用 Aviator 表达式计算保费
 Then 显示保费金额（含加费如有）
-And 投保人选择支付方式（微信/支付宝/银行转账）
-And 支付成功后支付回调到达
-And 系统确认支付 → 生成保单号 → 保单生效
-And 异步触发：电子保单生成、通知、佣金记录
+
+AC-2: 支付回调处理
+Given 投保人选择支付方式并完成支付
+When 支付回调到达系统
+Then ins_payment.status=2（已支付）
+And ins_proposal.status=5（已支付，等待出单）
+And 发送 PROPOSAL_PAID 消息到 RocketMQ（payload: proposalId）
 And 支付记录 operator 填 SYSTEM（回调自动处理）；人工退款时填财务账号
+
+AC-3: 异步出单触发
+Given 投保单已处于已支付状态（status=5）
+When ProposalPaidConsumer 消费 PROPOSAL_PAID 消息
+Then 调用 PolicyService.issuePolicy() 执行出单链
+And 出单成功：ins_proposal.status=6（已出单），ins_policy.status=有效，生成保单号
+And 异步触发：POLICY_ISSUED MQ → 佣金记录 + 承保通知
+
+AC-4: 出单失败兜底
+Given ProposalPaidConsumer 消费 PROPOSAL_PAID 消息
+When issuePolicy() 执行失败（出单链异常/DB 错误）
+Then ins_proposal.status 保持 5（已支付）
+And 记录错误日志（含 proposalId + 失败原因）
+And 人工可通过 POST /api/policy/issue/{proposalId} 重试出单
 ```
+
+> **实现计划**：`Covex补充计划20260706.md` Task 3.5（支付→出单 MQ 集成）
 
 #### Story 3.4：保单生成
 
@@ -429,7 +450,7 @@ stateDiagram-v2
 | 待核保 | 2 | 校验链全部通过 | 触发 LiteFlow underwrite 链 |
 | 核保中 | 3 | 自动核保结论为"转人工" | 分配核保员，进入工作台 |
 | 待支付 | 4 | 核保通过（自动或人工） | 生成支付链接，推送通知 |
-| 已支付 | 5 | 支付回调确认 | 触发 LiteFlow issue 链 |
+| 已支付 | 5 | 支付回调确认 | 发送 PROPOSAL_PAID MQ 消息，等待 ProposalPaidConsumer 触发出单链 |
 | 已出单 | 6 | 出单链执行成功 | 生成保单，异步触发通知 |
 | 已拒保 | 7 | 核保结论为拒保 | 通知投保人，记录原因 |
 | 已撤销 | 8 | 用户主动撤销/支付超时 | 释放占用资源 |
@@ -559,22 +580,26 @@ stateDiagram-v2
 ├── 调用支付通道（微信/支付宝/银行）
 ├── 创建 ins_payment 记录（status=1 待支付）
 ├── 等待支付回调（超时30分钟 → 投保单→已撤销）
-├── 支付成功 → ins_payment.status=2，ins_proposal.status=5
-└── 进入步骤7
+├── 支付回调到达 → ins_payment.status=2，ins_proposal.status=5
+└── 发送 PROPOSAL_PAID 消息到 RocketMQ（异步桥接步骤7）
 
-步骤7：出单（LiteFlow issue 链）
+步骤6→7 桥接（MQ 异步触发）：
+├── ProposalPaidConsumer 消费 PROPOSAL_PAID 消息
+├── 调用 PolicyService.issuePolicy(proposalId)
+├── 成功 → 进入步骤7完成
+└── 失败 → ins_proposal 保持 status=5，日志告警，人工 POST /api/policy/issue/{id} 重试
+
+步骤7：出单（LiteFlow issue 链，由 ProposalPaidConsumer 触发）
 ├── 创建保单 ins_policy（从投保单实例化）
 ├── 创建保单险种明细 ins_policy_coverage（快照保障责任+保额+保费）
 ├── 创建保单缴费计划 ins_policy_premium（快照缴费安排）
 ├── 生成保单号（全局唯一）
 ├── 保单状态 → 有效
-├── 异步触发：
-│   ├── 生成电子保单 PDF
-│   ├── 发送承保通知（短信/邮件/推送）
-│   ├── 计算佣金 → 创建 ins_commission 记录
-│   ├── 更新被保人累计风险保额
-│   └── 如有再保安排 → 触发再保通知
-└── 投保单状态 → 已出单
+├── 投保单状态 → 已出单（status=6）
+└── 发送 POLICY_ISSUED 消息 → 异步触发：
+    ├── 计算佣金 → 创建 ins_commission 记录
+    ├── 更新被保人累计风险保额
+    └── 如有再保安排 → 触发再保通知
 ```
 
 ### 10.2 续期→中止→复效流程

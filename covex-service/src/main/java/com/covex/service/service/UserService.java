@@ -234,8 +234,10 @@ public class UserService {
      * 获取用户角色列表
      */
     public List<RoleEntity> getUserRoles(Long userId) {
-        LambdaQueryWrapper<UserRoleEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserRoleEntity::getUserId, userId);
+        // 使用 QueryWrapper（字符串列名）避免 LambdaQueryWrapper 在 OGNL 求值阶段触发 lambda 解析递归
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserRoleEntity> wrapper =
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        wrapper.eq("user_id", userId);
         List<UserRoleEntity> userRoles = userRoleMapper.selectList(wrapper);
 
         if (userRoles.isEmpty()) {
@@ -261,9 +263,10 @@ public class UserService {
                 .map(RoleEntity::getId)
                 .collect(Collectors.toList());
 
-        // 查询角色权限关联
-        LambdaQueryWrapper<RolePermissionEntity> rpWrapper = new LambdaQueryWrapper<>();
-        rpWrapper.in(RolePermissionEntity::getRoleId, roleIds);
+        // 查询角色权限关联（使用 QueryWrapper 避免 OGNL lambda 解析递归）
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<RolePermissionEntity> rpWrapper =
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        rpWrapper.in("role_id", roleIds);
         List<RolePermissionEntity> rolePermissions = rolePermissionMapper.selectList(rpWrapper);
 
         if (rolePermissions.isEmpty()) {
