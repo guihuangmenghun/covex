@@ -24,7 +24,7 @@ export function toggleUserStatus(id: number, status: number) {
 }
 
 export function assignRoles(userId: number, roleIds: number[]) {
-  return request.post<any, Result<void>>(`/user/${userId}/roles`, { roleIds })
+  return request.post<any, Result<void>>(`/user/${userId}/roles`, roleIds)
 }
 
 export function getUserRoles(userId: number) {
