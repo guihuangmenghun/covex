@@ -2,7 +2,7 @@
 -- V20: 角色权限预设配置（根据 Covex路由权限矩阵.md v3.0 重新生成）
 -- 权限映射规则：
 --   R (可见可读) → read
---   W (可创建/编辑) → create, update
+--   W (可创建/编辑) → edit
 --   ✓ (可执行操作) → approve/pay/settle 等
 --   — (不可见) → 无权限
 -- ============================================================
@@ -21,35 +21,35 @@ SELECT 0, r.id, p.id, 'system'
 FROM ins_role r, ins_permission p
 WHERE r.role_code = 'sub_admin'
 AND p.permission_code IN (
-    -- 产品配置（RW = read + update）
-    'product:read', 'product:update',
+    -- 产品配置（RW = read + edit）
+    'product:read', 'product:edit',
     -- 费率表（RW）
-    'rate_table:read', 'rate_table:create', 'rate_table:update',
+    'rate_table:read', 'rate_table:create', 'rate_table:edit',
     -- 承保管理（RW）
-    'proposal:read', 'proposal:create', 'proposal:update',
+    'proposal:read', 'proposal:create', 'proposal:edit',
     -- 核保（R）
     'underwriting:read',
-    -- 支付（RW✓ = read + update + confirm）
-    'payment:read', 'payment:update', 'payment:confirm',
+    -- 支付（RW✓ = read + edit + confirm）
+    'payment:read', 'payment:edit', 'payment:confirm',
     -- 保单管理（RW）
-    'policy:read', 'policy:update',
+    'policy:read', 'policy:edit',
     -- 理赔管理（RW）
-    'claim:read', 'claim:create', 'claim:update',
+    'claim:read', 'claim:create', 'claim:edit',
     -- 佣金管理（RW✓）
     'commission:read', 'commission:settle', 'commission:pay',
     -- 渠道管理（RW）
-    'channel:read', 'channel:create', 'channel:update', 'channel:approve',
+    'channel:read', 'channel:create', 'channel:edit', 'channel:approve',
     -- 客户管理（RW）
-    'customer:read', 'customer:create', 'customer:update',
+    'customer:read', 'customer:create', 'customer:edit',
     -- 规则配置（RW）
-    'rule:read', 'rule:update',
+    'rule:read', 'rule:edit',
     -- 财务管理（RW✓）
     'finance:read', 'finance:settle',
     -- 合规管理（R）
     'compliance:read',
     -- 系统管理（R + 角色 RW）
     'user:read',
-    'role:read', 'role:create', 'role:update', 'role:assign_perm'
+    'role:read', 'role:create', 'role:edit', 'role:assign_perm'
 );
 
 -- ============================================================
@@ -61,7 +61,7 @@ FROM ins_role r, ins_permission p
 WHERE r.role_code = 'product_mgr'
 AND p.permission_code IN (
     -- 产品配置（RW✓ = 主人）
-    'product:read', 'product:create', 'product:update', 'product:delete', 'product:publish',
+    'product:read', 'product:create', 'product:edit', 'product:delete', 'product:publish',
     -- 费率表（R）
     'rate_table:read',
     -- 承保管理（R）
@@ -75,7 +75,7 @@ AND p.permission_code IN (
     -- 客户管理（R）
     'customer:read',
     -- 规则配置（费率 RW）
-    'rule:read', 'rule:update'
+    'rule:read', 'rule:edit'
 );
 
 -- ============================================================
@@ -87,9 +87,9 @@ FROM ins_role r, ins_permission p
 WHERE r.role_code = 'actuary'
 AND p.permission_code IN (
     -- 产品配置（RW）
-    'product:read', 'product:update',
+    'product:read', 'product:edit',
     -- 费率表（RW✓ = 主人）
-    'rate_table:read', 'rate_table:create', 'rate_table:update', 'rate_table:delete',
+    'rate_table:read', 'rate_table:create', 'rate_table:edit', 'rate_table:delete',
     -- 承保管理（R）
     'proposal:read',
     -- 保单管理（R）
@@ -97,7 +97,7 @@ AND p.permission_code IN (
     -- 客户管理（R）
     'customer:read',
     -- 规则配置（费率 RW）
-    'rule:read', 'rule:update'
+    'rule:read', 'rule:edit'
 );
 
 -- ============================================================
@@ -119,7 +119,7 @@ AND p.permission_code IN (
     -- 佣金管理（R）
     'commission:read',
     -- 渠道管理（RW✓ = 主人）
-    'channel:read', 'channel:create', 'channel:update', 'channel:delete', 'channel:approve',
+    'channel:read', 'channel:create', 'channel:edit', 'channel:delete', 'channel:approve',
     -- 客户管理（R）
     'customer:read',
     -- 规则配置（佣金 R）
@@ -137,11 +137,11 @@ AND p.permission_code IN (
     -- 产品配置（R）
     'product:read',
     -- 承保管理（RW✓ = 主人）
-    'proposal:read', 'proposal:create', 'proposal:update',
+    'proposal:read', 'proposal:create', 'proposal:edit',
     -- 保单管理（R）
     'policy:read',
     -- 客户管理（RW✓ = 主人）
-    'customer:read', 'customer:create', 'customer:update',
+    'customer:read', 'customer:create', 'customer:edit',
     -- 规则配置（R）
     'rule:read'
 );
@@ -157,13 +157,13 @@ AND p.permission_code IN (
     -- 产品配置（R）
     'product:read',
     -- 承保管理（RW✓ = 主人）
-    'proposal:read', 'proposal:create', 'proposal:update',
+    'proposal:read', 'proposal:create', 'proposal:edit',
     -- 保单管理（RW✓ = 主人）
-    'policy:read', 'policy:update',
+    'policy:read', 'policy:edit',
     -- 理赔管理（R + 报案 RW）
     'claim:read', 'claim:create',
     -- 客户管理（RW✓ = 主人）
-    'customer:read', 'customer:create', 'customer:update',
+    'customer:read', 'customer:create', 'customer:edit',
     -- 规则配置（R）
     'rule:read'
 );
@@ -179,16 +179,16 @@ AND p.permission_code IN (
     -- 产品配置（R）
     'product:read',
     -- 承保管理（RW✓ = 主人）
-    'proposal:read', 'proposal:update',
+    'proposal:read', 'proposal:edit',
     'underwriting:read', 'underwriting:approve',
     -- 保单管理（R）
     'policy:read',
     -- 理赔管理（R）
     'claim:read',
     -- 客户管理（RW）
-    'customer:read', 'customer:create', 'customer:update',
+    'customer:read', 'customer:create', 'customer:edit',
     -- 规则配置（核保 RW）
-    'rule:read', 'rule:update'
+    'rule:read', 'rule:edit'
 );
 
 -- ============================================================
@@ -204,13 +204,13 @@ AND p.permission_code IN (
     -- 承保管理（R）
     'proposal:read',
     -- 保单管理（RW✓ = 主人）
-    'policy:read', 'policy:update',
+    'policy:read', 'policy:edit',
     -- 理赔管理（R）
     'claim:read',
     -- 客户管理（RW）
-    'customer:read', 'customer:create', 'customer:update',
+    'customer:read', 'customer:create', 'customer:edit',
     -- 规则配置（保全 RW）
-    'rule:read', 'rule:update'
+    'rule:read', 'rule:edit'
 );
 
 -- ============================================================
@@ -228,11 +228,11 @@ AND p.permission_code IN (
     -- 保单管理（R）
     'policy:read',
     -- 理赔管理（RW✓ = 主人）
-    'claim:read', 'claim:create', 'claim:update', 'claim:approve', 'claim:review', 'claim:pay',
+    'claim:read', 'claim:create', 'claim:edit', 'claim:approve', 'claim:review', 'claim:pay',
     -- 客户管理（RW）
-    'customer:read', 'customer:create', 'customer:update',
+    'customer:read', 'customer:create', 'customer:edit',
     -- 规则配置（理赔 RW）
-    'rule:read', 'rule:update'
+    'rule:read', 'rule:edit'
 );
 
 -- ============================================================
@@ -250,7 +250,7 @@ AND p.permission_code IN (
     -- 保单管理（R）
     'policy:read',
     -- 理赔管理（R + 调查 RW）
-    'claim:read', 'claim:update',
+    'claim:read', 'claim:edit',
     -- 客户管理（R）
     'customer:read',
     -- 规则配置（理赔 R）
