@@ -7,6 +7,8 @@ import com.covex.common.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Map;
+
 /**
  * 产品模板表
  */
@@ -24,8 +26,8 @@ public class ProductTemplateEntity extends BaseEntity {
     private Integer isActive;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object templateData;
+    private Map<String, Object> templateData;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object paramSchema;
+    private Map<String, Object> paramSchema;
 }

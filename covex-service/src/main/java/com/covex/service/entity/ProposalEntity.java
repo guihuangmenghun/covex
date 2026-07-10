@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 投保单
@@ -26,16 +28,16 @@ public class ProposalEntity extends BaseEntity {
     private Long insuredId;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object productSnapshot;
+    private Map<String, Object> productSnapshot;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object selectedCoverages;
+    private List<Map<String, Object>> selectedCoverages;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object selectedPremiumPlan;
+    private Map<String, Object> selectedPremiumPlan;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object healthDeclaration;
+    private List<Map<String, Object>> healthDeclaration;
 
     private BigDecimal totalPremium;
     private BigDecimal totalSumInsured;

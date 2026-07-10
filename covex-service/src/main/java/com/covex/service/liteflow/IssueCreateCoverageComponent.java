@@ -34,9 +34,8 @@ public class IssueCreateCoverageComponent extends NodeComponent {
 
         List<PolicyCoverageEntity> coverageEntities = new ArrayList<>();
 
-        if (proposal.getSelectedCoverages() instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> coverages = (List<Map<String, Object>>) proposal.getSelectedCoverages();
+        List<Map<String, Object>> coverages = proposal.getSelectedCoverages();
+        if (coverages != null) {
             for (Map<String, Object> cov : coverages) {
                 PolicyCoverageEntity entity = new PolicyCoverageEntity();
                 entity.setTenantId(proposal.getTenantId());

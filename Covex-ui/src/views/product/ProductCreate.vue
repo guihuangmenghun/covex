@@ -185,6 +185,7 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getTemplateList, createProductFromTemplate } from '@/api/product'
 import type { ProductTemplate } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
 const router = useRouter()
 
@@ -205,7 +206,7 @@ const typeColorMap: Record<number, { type: string; color: string }> = {
 }
 function typeLabel(t: number | undefined) {
   if (t == null) return '未知'
-  return ({ 1: '寿险', 2: '意外险', 3: '健康险', 4: '车险', 5: '财产险', 6: '责任险', 7: '乘务险' } as Record<number, string>)[t] || '未知'
+  return useDictStore().getDictLabel('product_type', String(t)) || '未知'
 }
 
 async function loadTemplates() {
@@ -294,7 +295,7 @@ const confirmed = ref(false)
 const createLoading = ref(false)
 
 function freqLabel(f: number) {
-  return ({ 1: '趸交', 2: '年交', 4: '半年交', 12: '月交' } as Record<number, string>)[f] || `频率${f}`
+  return useDictStore().getDictLabel('payment_frequency', String(f)) || `频率${f}`
 }
 
 async function handleCreate() {

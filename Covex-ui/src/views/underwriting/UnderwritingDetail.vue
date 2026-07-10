@@ -105,6 +105,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { getProposalById } from '@/api/proposal'
 import { autoUnderwrite, manualUnderwrite, getUnderwritingRecords } from '@/api/underwriting'
 import type { Proposal, UnderwritingRecord } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
 const route = useRoute()
 const proposalId = Number(route.params.proposalId)
@@ -133,13 +134,11 @@ function formatMoney(val: number | null | undefined): string {
 }
 
 function getStatusLabel(status: number): string {
-  const map: Record<number, string> = { 1: '待校验', 2: '待核保', 3: '核保中', 4: '待支付', 5: '已支付', 6: '已出单', 7: '已拒保', 8: '已撤销' }
-  return map[status] || '未知'
+  return useDictStore().getDictLabel('proposal_status', String(status))
 }
 
 function uwResultLabel(result: number): string {
-  const map: Record<number, string> = { 1: '标准体', 2: '加费', 3: '除外', 4: '延期', 5: '拒保' }
-  return map[result] || '未知'
+  return useDictStore().getDictLabel('underwriting_result', String(result))
 }
 
 function getRecordType(result: number): string {

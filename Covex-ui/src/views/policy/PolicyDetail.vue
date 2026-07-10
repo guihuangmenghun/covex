@@ -95,6 +95,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getPolicyById } from '@/api/policy'
 import type { Policy, PolicyCoverage, PolicyPremium } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
 const route = useRoute()
 const policyId = Number(route.params.id)
@@ -111,8 +112,7 @@ function formatMoney(val: number | null | undefined): string {
 }
 
 function getStatusLabel(status: number): string {
-  const map: Record<number, string> = { 1: '有效', 2: '中止', 3: '终止' }
-  return map[status] || '未知'
+  return useDictStore().getDictLabel('policy_status', String(status))
 }
 
 function getStatusTagType(status: number): string {
@@ -121,25 +121,19 @@ function getStatusTagType(status: number): string {
 }
 
 function productTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '寿险', 2: '意外险', 3: '健康险', 4: '车险', 5: '财产险', 6: '责任险', 7: '乘务险' }
-  return map[type] || '-'
+  return useDictStore().getDictLabel('product_type', String(type))
 }
 
 function paymentModeLabel(mode: number): string {
-  const map: Record<number, string> = { 1: '趸交', 2: '期交' }
-  return map[mode] || '-'
+  return useDictStore().getDictLabel('payment_mode', String(mode))
 }
 
 function frequencyLabel(freq: number): string {
-  const map: Record<number, string> = { 1: '年缴', 2: '半年缴', 3: '季缴', 4: '月缴' }
-  return map[freq] || '-'
+  return useDictStore().getDictLabel('payment_frequency', String(freq))
 }
 
 function terminationReasonLabel(reason: number): string {
-  const map: Record<number, string> = {
-    1: '满期', 2: '退保', 3: '犹豫期退保', 4: '理赔终止', 5: '身故', 6: '复效超期', 7: '拒保终止',
-  }
-  return map[reason] || '-'
+  return useDictStore().getDictLabel('termination_reason', String(reason))
 }
 
 async function loadPolicy() {

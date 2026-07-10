@@ -40,9 +40,8 @@ public class IssueCreatePremiumComponent extends NodeComponent {
         premium.setPolicyId(policy.getId());
 
         // 从选中的缴费计划中提取信息
-        if (proposal.getSelectedPremiumPlan() instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> plan = (Map<String, Object>) proposal.getSelectedPremiumPlan();
+        Map<String, Object> plan = proposal.getSelectedPremiumPlan();
+        if (plan != null) {
             premium.setPremiumPlanCode(plan.getOrDefault("premiumPlanCode", "DEFAULT").toString());
             if (plan.get("paymentFrequency") != null) {
                 premium.setPaymentFrequency(Integer.parseInt(plan.get("paymentFrequency").toString()));

@@ -93,6 +93,9 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getChannelPage, updateChannelStatus } from '@/api/channel'
 import type { Channel } from '@/types'
+import { useDictStore } from '@/stores/dict'
+
+const dictStore = useDictStore()
 
 const loading = ref(false)
 const channels = ref<Channel[]>([])
@@ -108,13 +111,11 @@ const selectedChannel = ref<Channel | null>(null)
 const newStatus = ref(1)
 
 function channelTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '代理人', 2: '经纪人', 3: '银保', 4: '互联网', 5: '其他' }
-  return map[type] || '未知'
+  return dictStore.getDictLabel('channel_type', String(type))
 }
 
 function statusLabel(status: number): string {
-  const map: Record<number, string> = { 0: '停用', 1: '启用', 2: '冻结' }
-  return map[status] || '未知'
+  return dictStore.getDictLabel('channel_status', String(status))
 }
 
 function statusTagType(status: number): string {

@@ -89,6 +89,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
 import { getCustomerPage } from '@/api/customer'
 import type { Customer } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
 const loading = ref(false)
 const customers = ref<Customer[]>([])
@@ -130,8 +131,7 @@ function maskIdNo(idNo: string | null): string {
 }
 
 function idTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '身份证', 2: '护照', 3: '军官证', 4: '其他' }
-  return map[type] || '未知'
+  return useDictStore().getDictLabel('id_type', String(type))
 }
 
 async function loadCustomers() {

@@ -157,7 +157,7 @@ const allMenu: MenuItem[] = [
     children: [
       { index: '/system/user', title: '用户管理', roles: ['admin', 'sub_admin'] },
       { index: '/system/role', title: '角色管理', roles: ['admin'] },
-      { index: '/system/permission', title: '权限管理', roles: ['admin'] },
+      { index: '/system/permission', title: '角色权限', roles: ['admin'] },
       { index: '/system/data-scope', title: '数据范围', roles: ['admin'] },
       { index: '/system/dict', title: '数据字典', roles: ['admin'] },
     ],

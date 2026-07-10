@@ -6,7 +6,6 @@ import com.covex.service.entity.ClaimPaymentEntity;
 import com.covex.service.entity.PolicyCoverageEntity;
 import com.covex.service.mapper.ClaimMapper;
 import com.covex.service.mapper.ClaimPaymentMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import org.slf4j.Logger;
@@ -28,7 +27,6 @@ import java.util.Map;
 public class ClaimCalculationComponent extends NodeComponent {
 
     private static final Logger log = LoggerFactory.getLogger(ClaimCalculationComponent.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final ClaimMapper claimMapper;
     private final ClaimPaymentMapper claimPaymentMapper;
@@ -63,9 +61,8 @@ public class ClaimCalculationComponent extends NodeComponent {
         BigDecimal claimDayLimit = null;
 
         try {
-            if (coverage.getCoverageDetail() != null) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> detail = OBJECT_MAPPER.convertValue(coverage.getCoverageDetail(), Map.class);
+            Map<String, Object> detail = coverage.getCoverageDetail();
+            if (detail != null) {
 
                 Object ratioObj = detail.get("claim_ratio");
                 if (ratioObj != null) {

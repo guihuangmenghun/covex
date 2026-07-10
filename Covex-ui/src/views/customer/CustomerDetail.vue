@@ -185,14 +185,16 @@
             <el-option label="居住地址" :value="3" />
           </el-select>
         </el-form-item>
-        <el-form-item label="省份" prop="province">
-          <el-input v-model="addressForm.province" />
-        </el-form-item>
-        <el-form-item label="城市" prop="city">
-          <el-input v-model="addressForm.city" />
-        </el-form-item>
-        <el-form-item label="区/县" prop="district">
-          <el-input v-model="addressForm.district" />
+        <el-form-item label="省市区" prop="region">
+          <el-cascader
+            v-model="selectedRegion"
+            :options="regionData"
+            placeholder="选择省市区"
+            style="width: 100%"
+            clearable
+            filterable
+            @change="handleRegionChange"
+          />
         </el-form-item>
         <el-form-item label="详细地址" prop="detail">
           <el-input v-model="addressForm.detail" type="textarea" :rows="2" />
@@ -250,6 +252,8 @@ import {
   createBankAccount, getBankAccountList, updateBankAccount, deleteBankAccount, setDefaultBankAccount,
 } from '@/api/customer'
 import type { Customer, CustomerAddress, CustomerBankAccount } from '@/types'
+import { useDictStore } from '@/stores/dict'
+import { regionData, codeToText } from 'element-china-area-data'
 
 const route = useRoute()
 const customerId = computed(() => Number(route.params.id))
@@ -269,18 +273,15 @@ const editRules: FormRules = {
 }
 
 function idTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '身份证', 2: '护照', 3: '军官证', 4: '其他' }
-  return map[type] || '未知'
+  return useDictStore().getDictLabel('id_type', String(type))
 }
 
 function addressTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '通讯地址', 2: '账单地址', 3: '居住地址' }
-  return map[type] || '未知'
+  return useDictStore().getDictLabel('address_type', String(type))
 }
 
 function usageTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '保费扣款', 2: '理赔收款', 3: '佣金收款' }
-  return map[type] || '未知'
+  return useDictStore().getDictLabel('account_usage_type', String(type))
 }
 
 function maskAccountNo(accountNo: string | null): string {
@@ -348,12 +349,43 @@ const addressSubmitLoading = ref(false)
 const addressFormRef = ref<FormInstance>()
 const editingAddress = ref<CustomerAddress | null>(null)
 const addressForm = ref({ addressType: 1, province: '', city: '', district: '', detail: '', zipCode: '' })
+const selectedRegion = ref<string[]>([])
 const addressRules: FormRules = {
   addressType: [{ required: true, message: '请选择地址类型', trigger: 'change' }],
-  province: [{ required: true, message: '请输入省份', trigger: 'blur' }],
-  city: [{ required: true, message: '请输入城市', trigger: 'blur' }],
-  district: [{ required: true, message: '请输入区/县', trigger: 'blur' }],
+  region: [{ required: true, message: '请选择省市区', trigger: 'change', type: 'array', min: 3 }],
   detail: [{ required: true, message: '请输入详细地址', trigger: 'blur' }],
+}
+
+function handleRegionChange(val: string[] | null) {
+  if (val && val.length >= 3) {
+    addressForm.value.province = codeToText[val[0]] || ''
+    addressForm.value.city = codeToText[val[1]] || ''
+    addressForm.value.district = codeToText[val[2]] || ''
+    ;(addressForm.value as any).region = val
+  } else {
+    addressForm.value.province = ''
+    addressForm.value.city = ''
+    addressForm.value.district = ''
+    ;(addressForm.value as any).region = []
+  }
+}
+
+/** 省市区文本转代码（反向查找） */
+function textToRegionCodes(province: string, city: string, district: string): string[] {
+  for (const prov of regionData) {
+    if (prov.label === province) {
+      for (const c of prov.children || []) {
+        if (c.label === city) {
+          for (const d of c.children || []) {
+            if (d.label === district) {
+              return [prov.value, c.value, d.value]
+            }
+          }
+        }
+      }
+    }
+  }
+  return []
 }
 
 async function loadAddresses() {
@@ -370,9 +402,13 @@ function openAddressDialog(row?: CustomerAddress) {
   if (row) {
     editingAddress.value = row
     addressForm.value = { addressType: row.addressType, province: row.province, city: row.city, district: row.district, detail: row.detail, zipCode: row.zipCode || '' }
+    selectedRegion.value = textToRegionCodes(row.province, row.city, row.district)
+    ;(addressForm.value as any).region = selectedRegion.value
   } else {
     editingAddress.value = null
     addressForm.value = { addressType: 1, province: '', city: '', district: '', detail: '', zipCode: '' }
+    selectedRegion.value = []
+    ;(addressForm.value as any).region = []
   }
   addressDialogVisible.value = true
 }

@@ -60,9 +60,8 @@ public class PremiumCalculationService {
 
         BigDecimal totalPremium = BigDecimal.ZERO;
 
-        if (proposal.getSelectedCoverages() instanceof List) {
-            List<Map<String, Object>> coverages = (List<Map<String, Object>>) proposal.getSelectedCoverages();
-
+        List<Map<String, Object>> coverages = proposal.getSelectedCoverages();
+        if (coverages != null) {
             for (Map<String, Object> coverage : coverages) {
                 Object sumInsuredObj = coverage.get("sumInsured");
                 if (sumInsuredObj == null) continue;
@@ -87,7 +86,6 @@ public class PremiumCalculationService {
         return totalPremium;
     }
 
-    @SuppressWarnings("unchecked")
     private BigDecimal calculateWithAviator(ProposalEntity proposal, Map<String, Object> coverage, BigDecimal sumInsured) {
         // 从产品快照获取费率表编码
         String rateTableCode = "DEFAULT_RATE";
@@ -95,10 +93,11 @@ public class PremiumCalculationService {
         String dimensionKey = "default";
 
         // 尝试从产品快照 attributes 中获取费率表信息
-        if (proposal.getProductSnapshot() instanceof Map) {
-            Map<String, Object> snapshot = (Map<String, Object>) proposal.getProductSnapshot();
+        Map<String, Object> snapshot = proposal.getProductSnapshot();
+        if (snapshot != null) {
             Object attrs = snapshot.get("attributes");
             if (attrs instanceof Map) {
+                @SuppressWarnings("unchecked")
                 Map<String, Object> attributes = (Map<String, Object>) attrs;
                 if (attributes.get("rate_table_code") != null) {
                     rateTableCode = attributes.get("rate_table_code").toString();

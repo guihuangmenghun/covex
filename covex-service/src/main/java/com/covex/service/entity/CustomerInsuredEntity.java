@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,13 +30,13 @@ public class CustomerInsuredEntity extends BaseEntity {
     private String bloodType;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> medicalHistory;
+    private List<Map<String, Object>> medicalHistory;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> familyHistory;
+    private List<Map<String, Object>> familyHistory;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> currentMedications;
+    private List<Map<String, Object>> currentMedications;
 
     private LocalDateTime lastHealthUpdate;
 }

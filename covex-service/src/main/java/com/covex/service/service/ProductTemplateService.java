@@ -73,11 +73,10 @@ public class ProductTemplateService {
     /**
      * 从模板创建完整产品配置
      */
-    @SuppressWarnings("unchecked")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createFromTemplate(FromTemplateDTO dto) {
         ProductTemplateEntity template = getByCode(dto.getTemplateCode());
-        Map<String, Object> td = (Map<String, Object>) template.getTemplateData();
+        Map<String, Object> td = template.getTemplateData();
         if (td == null) {
             throw new BizException("模板数据为空: " + template.getTemplateCode());
         }
@@ -99,7 +98,8 @@ public class ProductTemplateService {
         product.setProductNature(getIntFromMap(productTpl, "product_nature"));
         product.setTermType(getIntFromMap(productTpl, "term_type"));
         product.setMainRiderFlag(getIntFromMap(productTpl, "main_rider_flag"));
-        product.setSaleChannel(productTpl.get("sale_channel"));
+        product.setSaleChannel(productTpl.get("sale_channel") instanceof List
+                ? (List<String>) productTpl.get("sale_channel") : null);
 
         Object capObj = productTpl.get("capabilities");
         product.setCapabilities(capObj instanceof Map ? (Map<String, Object>) capObj : null);

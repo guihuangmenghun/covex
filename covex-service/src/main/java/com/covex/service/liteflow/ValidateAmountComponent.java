@@ -32,9 +32,8 @@ public class ValidateAmountComponent extends NodeComponent {
 
         // 从产品快照获取保额上限，默认使用 1000 万
         BigDecimal maxAmount = DEFAULT_MAX_SUM_INSURED;
-        if (proposal.getProductSnapshot() instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> snapshot = (Map<String, Object>) proposal.getProductSnapshot();
+        Map<String, Object> snapshot = proposal.getProductSnapshot();
+        if (snapshot != null) {
             Object attrs = snapshot.get("attributes");
             if (attrs instanceof Map) {
                 @SuppressWarnings("unchecked")
@@ -54,9 +53,8 @@ public class ValidateAmountComponent extends NodeComponent {
         }
 
         // 校验每项保额为正数
-        if (proposal.getSelectedCoverages() instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> coverages = (List<Map<String, Object>>) proposal.getSelectedCoverages();
+        List<Map<String, Object>> coverages = proposal.getSelectedCoverages();
+        if (coverages != null) {
             for (Map<String, Object> cov : coverages) {
                 Object sumInsured = cov.get("sumInsured");
                 if (sumInsured != null) {

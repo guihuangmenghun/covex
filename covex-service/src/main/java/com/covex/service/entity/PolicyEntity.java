@@ -10,6 +10,8 @@ import lombok.EqualsAndHashCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 保单主表
@@ -27,7 +29,7 @@ public class PolicyEntity extends BaseEntity {
     private Long insuredId;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object productSnapshot;
+    private Map<String, Object> productSnapshot;
 
     private LocalDate effectiveDate;
     private LocalDate expiryDate;
@@ -39,7 +41,7 @@ public class PolicyEntity extends BaseEntity {
     private LocalDateTime terminatedAt;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object beneficiaries;
+    private List<Map<String, Object>> beneficiaries;
 
     // ====== 虚拟字段（不映射数据库列，Service 层填充） ======
     @TableField(exist = false)

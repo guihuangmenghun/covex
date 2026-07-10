@@ -29,11 +29,6 @@
         <el-table-column prop="email" label="邮箱" min-width="180">
           <template #default="{ row }">{{ row.email || '-' }}</template>
         </el-table-column>
-        <el-table-column prop="userType" label="用户类型" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag>{{ userTypeLabel(row.userType) }}</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
@@ -86,13 +81,6 @@
         <el-form-item label="邮箱" prop="email">
           <el-input v-model="form.email" placeholder="邮箱" />
         </el-form-item>
-        <el-form-item label="用户类型" prop="userType">
-          <el-select v-model="form.userType" placeholder="选择用户类型" style="width: 100%">
-            <el-option label="管理员" :value="1" />
-            <el-option label="普通用户" :value="2" />
-            <el-option label="渠道用户" :value="3" />
-          </el-select>
-        </el-form-item>
         <el-form-item v-if="!isEdit" label="角色模板" prop="initialRole">
           <el-select v-model="form.initialRole" placeholder="选择角色" style="width: 100%">
             <el-option-group v-for="group in roleGroups" :key="group.label" :label="group.label">
@@ -101,7 +89,7 @@
                 :key="r.code"
                 :label="r.name"
                 :value="r.code"
-                :disabled="r.code === 'sub_admin' && !isAdmin"
+                :disabled="['admin', 'sub_admin'].includes(r.code) && !isAdmin"
               />
             </el-option-group>
           </el-select>
@@ -232,7 +220,6 @@ const form = ref({
   realName: '',
   phone: '',
   email: '',
-  userType: 2,
   initialRole: '',
 })
 
@@ -242,9 +229,7 @@ const formRules: FormRules = {
   realName: [{ required: true, message: '请输入真实姓名', trigger: 'blur' }],
   phone: [{ pattern: /^1\d{10}$/, message: '手机号格式不正确', trigger: 'blur' }],
   email: [{ type: 'email', message: '邮箱格式不正确', trigger: 'blur' }],
-  userType: [{ required: true, message: '请选择用户类型', trigger: 'change' }],
 }
-
 // ====== 角色分配 ======
 const roleDialogVisible = ref(false)
 const roleLoading = ref(false)
@@ -274,10 +259,6 @@ function maskPhone(phone: string | null): string {
   return phone.slice(0, 3) + '****' + phone.slice(-4)
 }
 
-function userTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '管理员', 2: '普通用户', 3: '渠道用户' }
-  return map[type] || '未知'
-}
 
 // ====== 数据加载 ======
 async function loadUsers() {
@@ -308,7 +289,7 @@ function resetSearch() {
 function openAddDialog() {
   isEdit.value = false
   editingId.value = null
-  form.value = { username: '', password: '', realName: '', phone: '', email: '', userType: 2, initialRole: '' }
+  form.value = { username: '', password: '', realName: '', phone: '', email: '', initialRole: '' }
   dialogVisible.value = true
 }
 
@@ -321,7 +302,6 @@ function openEditDialog(row: User) {
     realName: row.realName,
     phone: row.phone || '',
     email: row.email || '',
-    userType: row.userType,
     initialRole: '',
   }
   dialogVisible.value = true

@@ -122,6 +122,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { calculatePremium, createPayment, queryPaymentByProposal, triggerTimeoutScan } from '@/api/payment'
 import type { Payment } from '@/types'
+import { useDictStore } from '@/stores/dict'
+
+const dictStore = useDictStore()
 
 const proposalId = ref<number | undefined>(undefined)
 const queried = ref(false)
@@ -146,19 +149,16 @@ function formatMoney(val: number | null | undefined): string {
 }
 
 function paymentTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '首期保费', 2: '续期保费', 3: '退保金', 4: '理赔金', 5: '保单借款' }
-  return map[type] || '未知'
+  return dictStore.getDictLabel('payment_type', String(type))
 }
 
 function payChannelLabel(channel: number | null): string {
   if (!channel) return '-'
-  const map: Record<number, string> = { 1: '微信', 2: '支付宝', 3: '银行转账', 4: '线下' }
-  return map[channel] || '未知'
+  return dictStore.getDictLabel('pay_channel', String(channel))
 }
 
 function statusLabel(status: number): string {
-  const map: Record<number, string> = { 1: '待支付', 2: '已支付', 3: '已退款', 4: '支付失败' }
-  return map[status] || '未知'
+  return dictStore.getDictLabel('payment_status', String(status))
 }
 
 function statusTagType(status: number): string {

@@ -106,6 +106,7 @@ import { getProductList, getProductById } from '@/api/product'
 import { getCustomerPage } from '@/api/customer'
 import { getChannelPage, getChannelUsers } from '@/api/channel'
 import type { Product, ProductCoverage, ProductPremium, Customer, Channel, ChannelUser, CreateProposalRequest } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
@@ -158,7 +159,7 @@ async function onProductChange() {
 }
 
 function freqLabel(f: number) {
-  return ({ 1: '趸交', 2: '年交', 4: '半年交', 12: '月交' } as Record<number, string>)[f] || `频率${f}`
+  return useDictStore().getDictLabel('payment_frequency', String(f)) || `频率${f}`
 }
 
 const selectedCoveragesData = computed(() => {

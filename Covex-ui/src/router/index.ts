@@ -317,7 +317,7 @@ const routes = [
         path: 'system/permission',
         name: 'system-permission',
         component: PermissionManagement,
-        meta: { title: '权限管理', roles: [ADMIN] },
+        meta: { title: '角色权限', roles: [ADMIN] },
       },
       {
         path: 'system/data-scope',

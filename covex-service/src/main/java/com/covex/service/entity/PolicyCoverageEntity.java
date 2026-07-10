@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * 保单险种明细
@@ -26,7 +27,7 @@ public class PolicyCoverageEntity extends BaseEntity {
     private BigDecimal deductible;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object coverageDetail;
+    private Map<String, Object> coverageDetail;
 
     private Integer status;
 

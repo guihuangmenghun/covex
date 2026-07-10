@@ -209,7 +209,9 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { getCommissionList, calculateCommission, settleCommission, getCommissionSummary, confirmCommission, rejectCommission } from '@/api/commission'
 import { getChannelPage } from '@/api/channel'
 import type { Commission, Channel } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
+const dictStore = useDictStore()
 const loading = ref(false)
 const commissions = ref<Commission[]>([])
 const channels = ref<Channel[]>([])
@@ -264,8 +266,7 @@ function formatMoney(val: number | null | undefined): string {
 }
 
 function getStatusLabel(status: number): string {
-  const map: Record<number, string> = { 1: '待结算', 2: '已确认', 3: '已支付', 4: '已驳回' }
-  return map[status] || '未知'
+  return dictStore.getDictLabel('commission_status', String(status))
 }
 
 function getStatusTagType(status: number): string {

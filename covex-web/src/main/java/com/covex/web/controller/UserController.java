@@ -7,9 +7,12 @@ import com.covex.service.entity.PermissionEntity;
 import com.covex.service.entity.RoleEntity;
 import com.covex.service.entity.UserEntity;
 import com.covex.service.service.UserService;
+import com.covex.common.exception.BizException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.List;
 import java.util.Map;
@@ -34,8 +37,7 @@ public class UserController {
         String realName = (String) body.get("realName");
         String phone = (String) body.get("phone");
         String email = (String) body.get("email");
-        Integer userType = body.get("userType") != null ? ((Number) body.get("userType")).intValue() : null;
-        UserEntity user = userService.createUser(username, password, realName, phone, email, userType);
+        UserEntity user = userService.createUser(username, password, realName, phone, email);
         user.setPasswordHash(null); // 不返回密码
         return Result.ok(user);
     }
@@ -89,6 +91,17 @@ public class UserController {
     @Operation(summary = "分配角色")
     @PostMapping("/{id}/roles")
     public Result<Void> assignRoles(@PathVariable Long id, @RequestBody List<Long> roleIds) {
+        // 权限层级控制：非 admin 用户不能分配 admin/sub_admin 角色
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .stream().map(GrantedAuthority::getAuthority).anyMatch(a -> a.equals("ROLE_admin"));
+        if (!isAdmin) {
+            List<RoleEntity> targetRoles = userService.getRolesByIds(roleIds);
+            boolean hasPrivilegedRole = targetRoles.stream()
+                    .anyMatch(r -> "admin".equals(r.getRoleCode()) || "sub_admin".equals(r.getRoleCode()));
+            if (hasPrivilegedRole) {
+                throw new BizException(403, "副管理员不能分配管理员角色");
+            }
+        }
         userService.assignRoles(id, roleIds);
         return Result.ok();
     }

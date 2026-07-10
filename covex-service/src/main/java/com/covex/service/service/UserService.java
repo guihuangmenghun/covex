@@ -63,7 +63,7 @@ public class UserService {
      * 创建用户
      */
     public UserEntity createUser(String username, String password, String realName,
-                                  String phone, String email, Integer userType) {
+                                  String phone, String email) {
         if (StringUtils.isBlank(username)) {
             throw new BizException("用户名不能为空");
         }
@@ -83,7 +83,6 @@ public class UserService {
         user.setRealName(realName);
         user.setPhone(phone);
         user.setEmail(email);
-        user.setUserType(userType != null ? userType : 1);
         user.setStatus(1);
         user.setTenantId(0L);
         userMapper.insert(user);
@@ -247,6 +246,16 @@ public class UserService {
         List<Long> roleIds = userRoles.stream()
                 .map(UserRoleEntity::getRoleId)
                 .collect(Collectors.toList());
+        return roleMapper.selectBatchIds(roleIds);
+    }
+
+    /**
+     * 根据角色 ID 列表查询角色实体
+     */
+    public List<RoleEntity> getRolesByIds(List<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return Collections.emptyList();
+        }
         return roleMapper.selectBatchIds(roleIds);
     }
 

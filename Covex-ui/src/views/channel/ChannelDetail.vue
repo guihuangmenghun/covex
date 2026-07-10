@@ -209,7 +209,9 @@ import {
 } from '@/api/channel'
 import { getProductList } from '@/api/product'
 import type { Channel, ChannelUser, ChannelProduct, Product } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
+const dictStore = useDictStore()
 const route = useRoute()
 const channelId = Number(route.params.id)
 
@@ -265,13 +267,11 @@ const authRules: FormRules = {
 }
 
 function channelTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '代理人', 2: '经纪人', 3: '银保', 4: '互联网', 5: '其他' }
-  return map[type] || '未知'
+  return dictStore.getDictLabel('channel_type', String(type))
 }
 
 function statusLabel(status: number): string {
-  const map: Record<number, string> = { 0: '停用', 1: '待审核', 2: '已签约', 3: '已终止', 4: '已冻结', 5: '已驳回' }
-  return map[status] || '未知'
+  return dictStore.getDictLabel('channel_status', String(status))
 }
 
 function statusTagType(status: number): string {

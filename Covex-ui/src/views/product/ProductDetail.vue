@@ -72,9 +72,9 @@
           <!-- Tab 1: 基本信息编辑 -->
           <el-tab-pane label="基本信息" name="info">
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="产品性质">{{ product.productNature ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="期限类型">{{ product.termType ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="主附险标志">{{ product.mainRiderFlag ?? '-' }}</el-descriptions-item>
+              <el-descriptions-item label="产品性质">{{ useDictStore().getDictLabel('product_nature', String(product.productNature)) }}</el-descriptions-item>
+              <el-descriptions-item label="期限类型">{{ useDictStore().getDictLabel('term_type', String(product.termType)) }}</el-descriptions-item>
+              <el-descriptions-item label="主附险标志">{{ useDictStore().getDictLabel('main_rider_flag', String(product.mainRiderFlag)) }}</el-descriptions-item>
               <el-descriptions-item label="销售日期">{{ product.startDate || '-' }} ~ {{ product.endDate || '-' }}</el-descriptions-item>
               <el-descriptions-item label="能力声明" :span="2">{{ product.capabilities ? JSON.stringify(product.capabilities) : '-' }}</el-descriptions-item>
               <el-descriptions-item label="扩展属性" :span="2">{{ product.attributes ? JSON.stringify(product.attributes) : '-' }}</el-descriptions-item>
@@ -359,6 +359,7 @@ import {
   getRiderList, createRider, deleteRider,
 } from '@/api/product'
 import type { Product, ProductCoverage, ProductPremium, ProductRule, ProductDocument, ProductRiderRel, ProductChangelog } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
 const route = useRoute()
 const router = useRouter()
@@ -373,7 +374,7 @@ const vsMap: Record<number, { label: string; type: string }> = {
   1: { label: '草稿', type: 'info' }, 2: { label: '待审批', type: 'warning' }, 3: { label: '已发布', type: 'success' }, 4: { label: '已冻结', type: 'danger' }, 5: { label: '已驳回', type: 'danger' },
 }
 function changeTypeLabel(t: number) {
-  return ({ 1: '创建', 2: '更新', 3: '删除', 4: '发布', 5: '冻结', 6: '克隆' } as Record<number, string>)[t] || '操作'
+  return useDictStore().getDictLabel('change_type', String(t)) || '操作'
 }
 
 // ====== 产品 ======

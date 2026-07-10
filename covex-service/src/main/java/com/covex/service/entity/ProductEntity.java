@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,7 +30,7 @@ public class ProductEntity extends BaseEntity {
     private Integer mainRiderFlag;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Object saleChannel;
+    private List<String> saleChannel;
 
     private LocalDate startDate;
     private LocalDate endDate;

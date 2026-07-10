@@ -194,8 +194,10 @@ import {
   getClaimDocuments, uploadClaimDocument,
 } from '@/api/claim'
 import type { Claim, ClaimReview, ClaimDocument } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
 const route = useRoute()
+const dictStore = useDictStore()
 const claimId = Number(route.params.id)
 
 const loading = ref(false)
@@ -241,8 +243,7 @@ function formatMoney(val: number | null | undefined): string {
 }
 
 function getStatusLabel(status: number): string {
-  const map: Record<number, string> = { 1: '已报案', 2: '已分配', 3: '审核中', 4: '调查中', 5: '待赔付', 6: '已赔付', 7: '已结案', 8: '已拒赔', 9: '申诉中', 10: '待主管复审', 11: '待总经理审批' }
-  return map[status] || '未知'
+  return dictStore.getDictLabel('claim_status', String(status))
 }
 
 function getStatusTagType(status: number): string {

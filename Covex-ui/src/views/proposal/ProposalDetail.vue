@@ -84,6 +84,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getProposalById, submitProposal } from '@/api/proposal'
 import type { Proposal } from '@/types'
+import { useDictStore } from '@/stores/dict'
 
 const route = useRoute()
 const proposalId = Number(route.params.id)
@@ -116,8 +117,7 @@ function formatMoney(val: number | null | undefined): string {
 }
 
 function productTypeLabel(type: number): string {
-  const map: Record<number, string> = { 1: '寿险', 2: '意外险', 3: '健康险', 4: '车险', 5: '财产险', 6: '责任险', 7: '乘务险' }
-  return map[type] || '-'
+  return useDictStore().getDictLabel('product_type', String(type))
 }
 
 async function loadProposal() {

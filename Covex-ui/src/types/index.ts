@@ -57,7 +57,6 @@ export interface User extends BaseEntity {
   realName: string
   phone: string | null
   email: string | null
-  userType: number
   status: number
 }
 
@@ -115,9 +114,9 @@ export interface Customer extends BaseEntity {
 }
 
 export interface CustomerHealthData {
-  medicalHistory: Record<string, any> | null
-  familyHistory: Record<string, any> | null
-  currentMedications: Record<string, any> | null
+  medicalHistory: Record<string, any>[] | null
+  familyHistory: Record<string, any>[] | null
+  currentMedications: Record<string, any>[] | null
   lastHealthUpdate: string | null
 }
 

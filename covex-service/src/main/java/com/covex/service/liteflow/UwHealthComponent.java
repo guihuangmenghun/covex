@@ -27,9 +27,8 @@ public class UwHealthComponent extends NodeComponent {
         boolean hasHealthIssue = false;
 
         // 检查健康告知
-        if (proposal.getHealthDeclaration() instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> declarations = (List<Map<String, Object>>) proposal.getHealthDeclaration();
+        List<Map<String, Object>> declarations = proposal.getHealthDeclaration();
+        if (declarations != null) {
             for (Map<String, Object> item : declarations) {
                 Object answer = item.get("answer");
                 if (answer != null && (Boolean.TRUE.equals(answer) || "yes".equalsIgnoreCase(answer.toString()) || "1".equals(answer.toString()))) {
@@ -55,7 +54,7 @@ public class UwHealthComponent extends NodeComponent {
                 log.info("Health UW: smoker detected");
             }
 
-            Map<String, Object> medicalHistory = insuredHealth.getMedicalHistory();
+            List<Map<String, Object>> medicalHistory = insuredHealth.getMedicalHistory();
             if (medicalHistory != null && !medicalHistory.isEmpty()) {
                 hasHealthIssue = true;
             }
