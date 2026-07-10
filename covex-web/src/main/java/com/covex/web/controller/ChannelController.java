@@ -52,7 +52,7 @@ public class ChannelController {
         return Result.ok(channelService.listChannels(tenantId, keyword, status, page, size));
     }
 
-    @RequiresPermission(code = "channel:update")
+    @RequiresPermission(code = "channel:edit")
     @Operation(summary = "更新渠道商")
     @PutMapping("/{id}")
     public Result<ChannelEntity> update(@PathVariable Long id, @RequestBody ChannelEntity entity) {

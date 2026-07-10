@@ -36,7 +36,7 @@ public class RoleController {
         return Result.ok(roleService.listRoles());
     }
 
-    @RequiresPermission(code = "role:update")
+    @RequiresPermission(code = "role:edit")
     @Operation(summary = "更新角色")
     @PutMapping("/{id}")
     public Result<RoleEntity> updateRole(@PathVariable Long id, @RequestBody RoleEntity entity) {

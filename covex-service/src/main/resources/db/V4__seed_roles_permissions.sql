@@ -27,12 +27,12 @@ INSERT INTO `ins_role` (`id`, `tenant_id`, `role_code`, `role_name`, `descriptio
 (16,0,'compliance','合规人员','负责产品合规审核和监管报告',1,0,NULL,'system',NULL,'2026-07-09 02:19:53','2026-07-10 03:38:44');
 
 -- ============================================================
--- ins_permission 数据（41 个权限）
+-- ins_permission 数据（40 个权限）
 -- ============================================================
 INSERT INTO `ins_permission` (`id`, `tenant_id`, `permission_code`, `permission_name`, `module`, `action`, `is_deleted`, `deleted_at`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES 
 (1,0,'user:create','创建用户','user','create',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
 (2,0,'user:read','查看用户','user','read',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
-(3,0,'user:update','编辑用户','user','update',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
+(3,0,'user:edit','编辑用户','user','edit',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
 (4,0,'user:delete','删除用户','user','delete',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
 (5,0,'role:create','创建角色','role','create',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
 (6,0,'role:read','查看角色','role','read',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
@@ -60,7 +60,6 @@ INSERT INTO `ins_permission` (`id`, `tenant_id`, `permission_code`, `permission_
 (28,0,'channel:read','查看渠道','channel','read',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
 (29,0,'channel:update','编辑渠道','channel','update',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
 (30,0,'channel:delete','删除渠道','channel','delete',0,NULL,'system',NULL,'2026-07-03 03:10:41','2026-07-03 03:10:41'),
-(31,0,'user:update','编辑用户','user','update',0,NULL,NULL,NULL,'2026-07-09 02:28:55','2026-07-10 03:43:37'),
 (32,0,'user:assign_role','分配角色','user','assign_role',0,NULL,NULL,NULL,'2026-07-09 02:28:55','2026-07-10 03:43:37'),
 (33,0,'role:assign_perm','分配权限','role','assign_perm',0,NULL,NULL,NULL,'2026-07-09 02:28:55','2026-07-10 03:43:37'),
 (34,0,'product:publish','发布产品','product','publish',0,NULL,NULL,NULL,'2026-07-09 02:28:55','2026-07-10 03:43:37'),
@@ -75,7 +74,7 @@ INSERT INTO `ins_permission` (`id`, `tenant_id`, `permission_code`, `permission_
 -- ============================================================
 -- ins_role_permission 数据（148 条，根据路由权限矩阵生成）
 -- ============================================================
--- admin (role_id=1): 41 个权限（全部）
+-- admin (role_id=1): 40 个权限（全部）
 INSERT INTO `ins_role_permission` (`tenant_id`, `role_id`, `permission_id`, `created_by`) VALUES 
 (0,1,1,'system'),(0,1,2,'system'),(0,1,3,'system'),(0,1,4,'system'),
 (0,1,5,'system'),(0,1,6,'system'),(0,1,7,'system'),(0,1,8,'system'),
@@ -84,7 +83,7 @@ INSERT INTO `ins_role_permission` (`tenant_id`, `role_id`, `permission_id`, `cre
 (0,1,17,'system'),(0,1,18,'system'),(0,1,19,'system'),(0,1,20,'system'),
 (0,1,21,'system'),(0,1,22,'system'),(0,1,23,'system'),(0,1,24,'system'),
 (0,1,25,'system'),(0,1,26,'system'),(0,1,27,'system'),(0,1,28,'system'),
-(0,1,29,'system'),(0,1,30,'system'),(0,1,31,'system'),(0,1,32,'system'),
+(0,1,29,'system'),(0,1,30,'system'),(0,1,32,'system'),
 (0,1,33,'system'),(0,1,34,'system'),(0,1,35,'system'),(0,1,36,'system'),
 (0,1,37,'system'),(0,1,38,'system'),(0,1,39,'system'),(0,1,40,'system');
 

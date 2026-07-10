@@ -71,7 +71,7 @@ public class UserController {
         return Result.ok(result);
     }
 
-    @RequiresPermission(code = "user:update")
+    @RequiresPermission(code = "user:edit")
     @Operation(summary = "更新用户")
     @PutMapping("/{id}")
     public Result<UserEntity> updateUser(@PathVariable Long id, @RequestBody UserEntity entity) {

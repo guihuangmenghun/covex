@@ -65,7 +65,7 @@ public class ProductController {
         return Result.ok(productService.listProducts(tenantId, productType, versionStatus, keyword, page, size));
     }
 
-    @RequiresPermission(code = "product:update")
+    @RequiresPermission(code = "product:edit")
     @Operation(summary = "更新产品（仅草稿/审批驳回）")
     @PutMapping("/{id}")
     public Result<ProductEntity> update(@PathVariable Long id, @RequestBody ProductEntity entity) {
