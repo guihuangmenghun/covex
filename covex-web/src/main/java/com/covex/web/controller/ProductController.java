@@ -27,7 +27,7 @@ public class ProductController {
         this.changelogService = changelogService;
     }
 
-    @RequiresPermission(code = "product:create")
+    @RequiresPermission(code = "product:edit")
     @Operation(summary = "创建产品")
     @PostMapping
     public Result<ProductEntity> create(@RequestBody ProductEntity entity) {

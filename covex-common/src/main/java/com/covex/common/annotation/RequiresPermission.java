@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 public @interface RequiresPermission {
 
     /**
-     * 权限码，如 "product:create", "claim:review"
+     * 权限码，如 "product:edit", "claim:review"
      */
     String code();
 }

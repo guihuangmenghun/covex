@@ -36,7 +36,7 @@ public class ProductTemplateController {
         return Result.ok(templateService.getByCode(code));
     }
 
-    @RequiresPermission(code = "product:create")
+    @RequiresPermission(code = "product:edit")
     @Operation(summary = "从模板创建产品")
     @PostMapping("/create-product")
     public Result<Map<String, Object>> createFromTemplate(@RequestBody FromTemplateDTO dto) {

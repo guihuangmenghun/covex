@@ -28,7 +28,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @RequiresPermission(code = "user:create")
+    @RequiresPermission(code = "user:edit")
     @Operation(summary = "创建用户")
     @PostMapping
     public Result<UserEntity> createUser(@RequestBody Map<String, Object> body) {

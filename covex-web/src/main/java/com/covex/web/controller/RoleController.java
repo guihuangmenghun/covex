@@ -22,7 +22,7 @@ public class RoleController {
         this.roleService = roleService;
     }
 
-    @RequiresPermission(code = "role:create")
+    @RequiresPermission(code = "role:edit")
     @Operation(summary = "创建角色")
     @PostMapping
     public Result<RoleEntity> createRole(@RequestBody RoleEntity entity) {

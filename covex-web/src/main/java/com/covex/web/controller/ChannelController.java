@@ -25,7 +25,7 @@ public class ChannelController {
         this.channelService = channelService;
     }
 
-    @RequiresPermission(code = "channel:create")
+    @RequiresPermission(code = "channel:edit")
     @Operation(summary = "创建渠道商")
     @PostMapping
     public Result<ChannelEntity> create(@RequestBody ChannelEntity entity) {
