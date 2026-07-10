@@ -801,11 +801,11 @@
 |---|---|---|---|
 | product:view | 产品管理 | 查看 | 查看产品列表和详情 |
 | product:create | 产品管理 | 创建 | 新建产品 |
-| product:edit | 产品管理 | 编辑 | 编辑产品信息 |
+| product:update | 产品管理 | 编辑 | 编辑产品信息 |
 | product:publish | 产品管理 | 发布 | 发布产品 |
 | product:freeze | 产品管理 | 冻结 | 冻结产品 |
 | rate_table:view | 费率表 | 查看 | 查看费率表 |
-| rate_table:edit | 费率表 | 编辑 | 管理费率表数据 |
+| rate_table:update | 费率表 | 编辑 | 管理费率表数据 |
 | rate_table:cache | 费率表 | 缓存 | 操作 Redis 缓存 |
 | proposal:view | 投保单 | 查看 | 查看投保单 |
 | proposal:create | 投保单 | 创建 | 新建投保单 |
@@ -826,9 +826,9 @@
 | commission:view | 佣金 | 查看 | 查看佣金列表 |
 | commission:settle | 佣金 | 结算 | 月度结算/确认支付 |
 | customer:view | 客户 | 查看 | 查看客户信息 |
-| customer:edit | 客户 | 编辑 | 编辑客户信息 |
+| customer:update | 客户 | 编辑 | 编辑客户信息 |
 | channel:view | 渠道 | 查看 | 查看渠道商 |
-| channel:edit | 渠道 | 编辑 | 管理渠道商 |
+| channel:update | 渠道 | 编辑 | 管理渠道商 |
 | channel:authorize | 渠道 | 授权 | 产品授权/撤销 |
 | system:user | 系统 | 用户 | 用户管理 |
 | system:role | 系统 | 角色 | 角色管理 |

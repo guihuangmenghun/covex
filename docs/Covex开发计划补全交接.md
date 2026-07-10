@@ -152,13 +152,13 @@
    - 调用 `PermissionCacheService.getUserPermissions(userId)`
    - 校验权限码，不匹配抛 `BizException(403)`
 3. 在关键 Controller 方法上添加注解：
-   - 产品 CRUD：`product:create`, `product:edit`, `product:delete`, `product:publish`
+   - 产品 CRUD：`product:create`, `product:update`, `product:delete`, `product:publish`
    - 核保审批：`underwriting:manual`
    - 理赔审核：`claim:review`, `claim:pay`
-   - 用户管理：`user:create`, `user:edit`, `user:assign_role`
-   - 角色权限：`role:create`, `role:edit`, `role:assign_perm`
+   - 用户管理：`user:create`, `user:update`, `user:assign_role`
+   - 角色权限：`role:create`, `role:update`, `role:assign_perm`
    - 佣金结算：`commission:settle`
-   - 渠道管理：`channel:create`, `channel:edit`
+   - 渠道管理：`channel:create`, `channel:update`
 
 ### 任务 6（P1）：DataPermissionInterceptor 数据权限
 

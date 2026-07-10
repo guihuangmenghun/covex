@@ -33,6 +33,23 @@
 - 字段名：snake_case
 - 禁止：LM/LD 前缀、PascalCase、非标准缩写（如 Risk/Duty/Get/Edor/Cal）
 
+### 权限编码规范（强制）
+- 权限编码格式：`模块:动作`，动作编码必须使用以下标准词汇：
+
+| 矩阵标记 | 动作编码 | 中文名 | 说明 |
+|---|---|---|---|
+| R | `read` | 查看 | 只读访问 |
+| W | `edit` | 编辑 | 创建+修改合一（对应路由级 RW 权限） |
+| ✓ | 具体动作（如 `approve`/`publish`/`confirm`） | 对应中文 | 按钮级操作 |
+| — | 无权限 | — | 不可见 |
+
+- **禁止使用 `update` 作为权限动作编码**，统一用 `edit`（与路由权限矩阵 W 语义一致）
+- `create` 仅用于**独立创建页面**的路由级权限（如 `/proposal/create`），不与 `edit` 合并
+- 新增权限时必须检查：
+  - 编码是否已存在于 `ins_permission` 表（禁止重复）
+  - Controller 的 `@RequiresPermission` 注解编码是否与数据库一致
+  - 前端 `v-permission` 指令编码是否同步
+
 ### 数据类型
 - 布尔：`TINYINT(1)`，1=是 0=否（禁止 Y/N）
 - 枚举：`TINYINT`/`SMALLINT`，全数字编码（禁止字母 L/A/H）
@@ -111,6 +128,7 @@ updated_at DATETIME
 □ 规则用 LiteFlow/Aviator？（不是 Drools）
 □ 没使用禁止组件？
 □ SQL 文件头有 SET NAMES utf8mb4？
+□ 权限编码用 edit 不用 update？与 ins_permission 表一致？
 □ 需要更新文档？
 ```
 

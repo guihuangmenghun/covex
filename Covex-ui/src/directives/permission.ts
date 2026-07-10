@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/user'
  * 
  * 用法：
  * - v-permission="'product:publish'" - 单个权限
- * - v-permission="['product:edit', 'product:publish']" - 多个权限（满足任一即可）
+ * - v-permission="['product:update', 'product:publish']" - 多个权限（满足任一即可）
  * 
  * 注意：当前基于角色控制，permission 值实际检查的是角色
  * 后续可扩展为权限编码检查
