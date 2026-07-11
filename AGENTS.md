@@ -139,7 +139,7 @@ updated_at DATETIME
 □ SQL 文件头有 SET NAMES utf8mb4？
 □ 权限编码用 edit 不用 update？与 ins_permission 表一致？
 □ 工具类 JSON 参数有多层类型适配？（禁令 1）
-□ 校验组件参数缺失时 ctx.addError 而非静默跳过？（禁令 2）
+□ 校验逻辑参数缺失时报错而非静默跳过？（禁令 2）
 □ catch 块有 log.warn 而非空注释？（禁令 3）
 □ 需要更新文档？
 ```
@@ -232,79 +232,75 @@ updated_at DATETIME
 
 ## 编码质量三禁令（强制）
 
-源自 Issue #12（ValidateAgeComponent 年龄校验静默失效）的教训。
-
 ### 禁令 1：工具类禁止只处理单一预期类型
 
-工具类方法接收 `Object`/JSON 类型参数时，必须实现多层类型适配：
+工具类方法接收 `Object`/JSON 类型参数时，必须实现多层类型适配，禁止假设输入一定是某种特定类型：
 
 ```java
-// ✅ 正确：Map → String(JSON) → null 三层适配
-public static Map<String, Object> extractAttributes(Map<String, Object> snapshot) {
-    Object attrs = snapshot.get("attributes");
-    if (attrs instanceof Map) return (Map<String, Object>) attrs;
-    if (attrs instanceof String) {
-        try { return OBJECT_MAPPER.readValue((String) attrs, new TypeReference<>() {}); }
+// ✅ 正确：多层类型适配（Map → String(JSON) → null）
+public static Map<String, Object> extractJsonField(Map<String, Object> source, String key) {
+    Object value = source.get(key);
+    if (value instanceof Map) return (Map<String, Object>) value;
+    if (value instanceof String) {
+        try { return objectMapper.readValue((String) value, new TypeReference<>() {}); }
         catch (Exception ignored) {}
     }
     return null;
 }
 
 // ❌ 错误：只处理 Map，其他类型静默返回 null
-if (attrs instanceof Map) return (Map) attrs;
+if (value instanceof Map) return (Map) value;
 return null;
 ```
 
-**原因**：JacksonTypeHandler 对嵌套 JSON 字段的反序列化结果类型不可控（可能为 Map、String、LinkedHashMap）。
+**原因**：ORM/JSON 框架对嵌套字段的反序列化结果类型不可控（可能为 Map、String、LinkedHashMap 等），工具类必须防御性处理。若直接返回 null，调用方会使用默认值，导致业务逻辑静默偏离预期。
 
-### 禁令 2：校验组件禁止静默跳过
+### 禁令 2：校验逻辑禁止静默跳过
 
-校验组件在关键参数缺失时，必须报错阻止流程，禁止用 `if (x != null)` 包裹整个校验逻辑：
+校验/拦截器在关键参数缺失时，必须明确报错并阻止流程，禁止用 `if (x != null)` 包裹整段校验逻辑：
 
 ```java
 // ✅ 正确：参数缺失时报错阻止流程
-if (insured == null) {
-    ctx.addError("被保人信息未加载，无法进行年龄校验");
+if (entity == null) {
+    context.addError("实体信息未加载，无法执行校验");
     return;
 }
-if (insured.getBirthDate() == null) {
-    ctx.addError("被保人出生日期缺失，无法进行年龄校验");
+if (entity.getEffectiveDate() == null) {
+    context.addError("生效日期缺失，无法执行校验");
     return;
 }
-int age = Period.between(insured.getBirthDate(), LocalDate.now()).getYears();
-if (age > maxAge) ctx.addError("...");
+// 正常校验逻辑
+if (entity.getAmount().compareTo(limit) > 0) context.addError("...");
 
 // ❌ 错误：条件不满足时整个校验被跳过，不报错不日志
-if (insured != null && insured.getBirthDate() != null) {
-    int age = ...;
-    if (age > maxAge) ctx.addError("...");
+if (entity != null && entity.getEffectiveDate() != null) {
+    if (entity.getAmount().compareTo(limit) > 0) context.addError("...");
 }
 ```
 
-**原因**：参数缺失 ≠ "不需要校验"，而是 "校验条件不满足，应报错阻止流程"。
+**原因**：参数缺失 ≠ "不需要校验"，而是 "校验前置条件不满足，应报错阻止流程继续"。静默跳过会导致不合法数据通过校验。
 
-### 禁令 3：数据加载禁止空 catch
+### 禁令 3：异常处理禁止空 catch
 
-`buildFlowContext()` 等数据加载方法中，catch 块必须记录 warn 日志：
+数据加载、外部调用等可能失败的方法中，catch 块必须记录 warn 级别日志，禁止用空注释替代：
 
 ```java
-// ✅ 正确：记录异常信息便于排查
+// ✅ 正确：记录异常上下文便于排查
 try {
-    ctx.setInsured(customerService.getCustomerById(proposal.getInsuredId()));
+    context.setEntity(entityService.getById(id));
 } catch (Exception e) {
-    log.warn("buildFlowContext: failed to load insured id={}: {}",
-            proposal.getInsuredId(), e.getMessage());
+    log.warn("加载实体失败 id={}: {}", id, e.getMessage());
 }
 
-// ❌ 错误：空注释吞掉异常，上游完全无感知
+// ❌ 错误：空注释吞掉异常，调用方完全无感知
 try {
-    ctx.setInsured(customerService.getCustomerById(proposal.getInsuredId()));
+    context.setEntity(entityService.getById(id));
 } catch (Exception e) {
-    // Customer may not exist
+    // Entity may not exist
 }
 ```
 
-**原因**：空 catch → 参数为 null → 触发禁令 2 的静默跳过 → 校验完全失效且无法排查。
+**原因**：空 catch → 变量为 null → 触发禁令 2 的静默跳过 → 校验完全失效且无法排查。这是“静默失效链”的典型根因。
 
 ## 跨服务集成检查清单
 
