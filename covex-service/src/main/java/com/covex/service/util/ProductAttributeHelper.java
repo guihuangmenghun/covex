@@ -1,5 +1,8 @@
 package com.covex.service.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -134,9 +137,11 @@ public final class ProductAttributeHelper {
                 MAX_MATURITY_AGE, "max_maturity_age", "maxMaturityAge");
     }
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     /**
      * 从投保单/保单的产品快照中提取 attributes Map。
-     * 快照中 attributes 可能是 Map 或 toString 结果，需要安全转换。
+     * 快照中 attributes 可能是 Map 或 JSON String，需要安全转换。
      */
     @SuppressWarnings("unchecked")
     public static Map<String, Object> extractAttributes(Map<String, Object> snapshot) {
@@ -145,11 +150,19 @@ public final class ProductAttributeHelper {
         if (attrs instanceof Map) {
             return (Map<String, Object>) attrs;
         }
+        // 容错：attributes 可能是 JSON 字符串
+        if (attrs instanceof String) {
+            try {
+                return OBJECT_MAPPER.readValue((String) attrs,
+                        new TypeReference<Map<String, Object>>() {});
+            } catch (Exception ignored) {}
+        }
         return null;
     }
 
     /**
      * 从投保单/保单的产品快照中提取 capabilities Map。
+     * 容错处理：支持 Map 和 JSON String 两种格式。
      */
     @SuppressWarnings("unchecked")
     public static Map<String, Object> extractCapabilities(Map<String, Object> snapshot) {
@@ -157,6 +170,12 @@ public final class ProductAttributeHelper {
         Object caps = snapshot.get("capabilities");
         if (caps instanceof Map) {
             return (Map<String, Object>) caps;
+        }
+        if (caps instanceof String) {
+            try {
+                return OBJECT_MAPPER.readValue((String) caps,
+                        new TypeReference<Map<String, Object>>() {});
+            } catch (Exception ignored) {}
         }
         return null;
     }

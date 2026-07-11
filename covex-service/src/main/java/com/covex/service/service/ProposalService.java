@@ -273,16 +273,21 @@ public class ProposalService {
             try {
                 ctx.setApplicant(customerService.getCustomerById(proposal.getApplicantId()));
             } catch (Exception e) {
-                // Customer may not exist or may have been deleted
+                log.warn("buildFlowContext: failed to load applicant id={}: {}",
+                        proposal.getApplicantId(), e.getMessage());
             }
         }
 
         // 加载被保人
         if (proposal.getInsuredId() != null) {
             try {
-                ctx.setInsured(customerService.getCustomerById(proposal.getInsuredId()));
+                CustomerEntity insured = customerService.getCustomerById(proposal.getInsuredId());
+                ctx.setInsured(insured);
+                log.info("buildFlowContext: insured loaded id={}, birthDate={}",
+                        insured.getId(), insured.getBirthDate());
             } catch (Exception e) {
-                // Customer may not exist or may have been deleted
+                log.warn("buildFlowContext: failed to load insured id={}: {}",
+                        proposal.getInsuredId(), e.getMessage());
             }
             // 加载被保人健康档案
             LambdaQueryWrapper<CustomerInsuredEntity> insuredWrapper = new LambdaQueryWrapper<>();
