@@ -138,6 +138,9 @@ updated_at DATETIME
 □ 没使用禁止组件？
 □ SQL 文件头有 SET NAMES utf8mb4？
 □ 权限编码用 edit 不用 update？与 ins_permission 表一致？
+□ 工具类 JSON 参数有多层类型适配？（禁令 1）
+□ 校验组件参数缺失时 ctx.addError 而非静默跳过？（禁令 2）
+□ catch 块有 log.warn 而非空注释？（禁令 3）
 □ 需要更新文档？
 ```
 
