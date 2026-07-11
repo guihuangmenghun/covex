@@ -227,6 +227,82 @@ updated_at DATETIME
 禁止：跳过第 1 步直接分析框架源码。
 ```
 
+## 编码质量三禁令（强制）
+
+源自 Issue #12（ValidateAgeComponent 年龄校验静默失效）的教训。
+
+### 禁令 1：工具类禁止只处理单一预期类型
+
+工具类方法接收 `Object`/JSON 类型参数时，必须实现多层类型适配：
+
+```java
+// ✅ 正确：Map → String(JSON) → null 三层适配
+public static Map<String, Object> extractAttributes(Map<String, Object> snapshot) {
+    Object attrs = snapshot.get("attributes");
+    if (attrs instanceof Map) return (Map<String, Object>) attrs;
+    if (attrs instanceof String) {
+        try { return OBJECT_MAPPER.readValue((String) attrs, new TypeReference<>() {}); }
+        catch (Exception ignored) {}
+    }
+    return null;
+}
+
+// ❌ 错误：只处理 Map，其他类型静默返回 null
+if (attrs instanceof Map) return (Map) attrs;
+return null;
+```
+
+**原因**：JacksonTypeHandler 对嵌套 JSON 字段的反序列化结果类型不可控（可能为 Map、String、LinkedHashMap）。
+
+### 禁令 2：校验组件禁止静默跳过
+
+校验组件在关键参数缺失时，必须报错阻止流程，禁止用 `if (x != null)` 包裹整个校验逻辑：
+
+```java
+// ✅ 正确：参数缺失时报错阻止流程
+if (insured == null) {
+    ctx.addError("被保人信息未加载，无法进行年龄校验");
+    return;
+}
+if (insured.getBirthDate() == null) {
+    ctx.addError("被保人出生日期缺失，无法进行年龄校验");
+    return;
+}
+int age = Period.between(insured.getBirthDate(), LocalDate.now()).getYears();
+if (age > maxAge) ctx.addError("...");
+
+// ❌ 错误：条件不满足时整个校验被跳过，不报错不日志
+if (insured != null && insured.getBirthDate() != null) {
+    int age = ...;
+    if (age > maxAge) ctx.addError("...");
+}
+```
+
+**原因**：参数缺失 ≠ "不需要校验"，而是 "校验条件不满足，应报错阻止流程"。
+
+### 禁令 3：数据加载禁止空 catch
+
+`buildFlowContext()` 等数据加载方法中，catch 块必须记录 warn 日志：
+
+```java
+// ✅ 正确：记录异常信息便于排查
+try {
+    ctx.setInsured(customerService.getCustomerById(proposal.getInsuredId()));
+} catch (Exception e) {
+    log.warn("buildFlowContext: failed to load insured id={}: {}",
+            proposal.getInsuredId(), e.getMessage());
+}
+
+// ❌ 错误：空注释吞掉异常，上游完全无感知
+try {
+    ctx.setInsured(customerService.getCustomerById(proposal.getInsuredId()));
+} catch (Exception e) {
+    // Customer may not exist
+}
+```
+
+**原因**：空 catch → 参数为 null → 触发禁令 2 的静默跳过 → 校验完全失效且无法排查。
+
 ## 跨服务集成检查清单
 
 开发计划中涉及“A 触发 B”的任务时，必须检查：
