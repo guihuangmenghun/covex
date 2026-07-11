@@ -243,6 +243,17 @@ public class CustomerService {
     }
 
     /**
+     * 查询健康档案（从 ins_customer_insured 表读取）
+     */
+    public CustomerInsuredEntity getHealthRecord(Long customerId) {
+        LambdaQueryWrapper<CustomerInsuredEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomerInsuredEntity::getTenantId, 0L)
+               .eq(CustomerInsuredEntity::getCustomerId, customerId)
+               .last("LIMIT 1");
+        return insuredMapper.selectOne(wrapper);
+    }
+
+    /**
      * 更新健康档案（更新 ins_customer_insured 的健康相关字段）
      */
     @Transactional

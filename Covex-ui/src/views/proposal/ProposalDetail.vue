@@ -48,7 +48,7 @@
         <el-descriptions-item label="简称">{{ proposal.productSnapshot.shortName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="产品类型">{{ productTypeLabel(proposal.productSnapshot.productType) }}</el-descriptions-item>
         <el-descriptions-item label="版本">{{ proposal.productSnapshot.version || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="产品性质">{{ proposal.productSnapshot.productNature ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="产品性质">{{ productNatureLabel(proposal.productSnapshot.productNature) }}</el-descriptions-item>
       </el-descriptions>
     </el-card>
 
@@ -118,6 +118,11 @@ function formatMoney(val: number | null | undefined): string {
 
 function productTypeLabel(type: number): string {
   return useDictStore().getDictLabel('product_type', String(type))
+}
+
+function productNatureLabel(nature: number | null | undefined): string {
+  if (nature == null) return '-'
+  return useDictStore().getDictLabel('product_nature', String(nature))
 }
 
 async function loadProposal() {

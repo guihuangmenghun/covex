@@ -65,6 +65,13 @@ public class CustomerController {
         return Result.ok();
     }
 
+    @Operation(summary = "查询健康档案")
+    @GetMapping("/{id}/health")
+    public Result<CustomerInsuredEntity> getHealth(@PathVariable Long id) {
+        CustomerInsuredEntity health = customerService.getHealthRecord(id);
+        return Result.ok(health);
+    }
+
     @Operation(summary = "更新健康档案")
     @PutMapping("/{id}/health")
     public Result<Void> updateHealth(@PathVariable Long id, @RequestBody CustomerInsuredEntity healthData) {

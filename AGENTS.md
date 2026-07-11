@@ -62,21 +62,30 @@
 - 增量迁移：创建新的 `V{N}__xxx.sql` 执行 `UPDATE/INSERT`（已有数据库生效）
 - 前端下拉框、状态标签等显示文本以字典表为准，禁止前端硬编码状态名称
 
-### SQL 字符集规范（强制）
-- **创建 SQL 文件时**：文件头必须添加 `SET NAMES utf8mb4;`
+### SQL 迁移文件规范（强制）
+- **文件头注释**（必须包含）：
+  1. `-- V{N}: 简要描述`
+  2. `-- 对应计划：{计划文件名} → {Task/Story 编号}`（如 `Covex补充计划20260709.md → Task 0.6`）
+  3. `-- 根因：...`（仅 Bug 修复类 SQL 需要）
+  4. `-- 执行方式：mysql -u root -p covex --default-character-set=utf8mb4 < V{N}__xxx.sql`
+- **字符集声明**：文件头必须添加 `SET NAMES utf8mb4;`
 - **导入 SQL 文件时**：必须指定字符集 `--default-character-set=utf8mb4`
 - 示例：
   ```sql
-  -- V19__xxx.sql
+  -- V24: 修复 ins_product.sale_channel JSON 格式脏数据
+  -- 对应计划：Covex补充计划20260709.md → 第三轮测试 P0-5 修复
+  -- 根因：部分早期产品的 sale_channel 存为 "1,2"（逗号分隔字符串）
+  -- 执行方式：mysql -u root -p covex --default-character-set=utf8mb4 < V24__fix_sale_channel_json.sql
+
   SET NAMES utf8mb4;
-  
-  UPDATE ins_role SET role_name = '管理员' WHERE role_code = 'admin';
+
+  UPDATE ins_product SET sale_channel = '["1","2"]' WHERE sale_channel = '"1,2"' AND is_deleted = 0;
   ```
   ```bash
   # 导入 SQL 文件
   mysql -u root -p covex --default-character-set=utf8mb4 < V19__xxx.sql
   ```
-- **原因**：避免中文乱码问题（UTF-8 字节被当作 latin1 存储）
+- **原因**：避免中文乱码问题（UTF-8 字节被当作 latin1 存储）；计划来源标注便于追溯需求和审计覆盖度
 
 ### 禁止组件
 - ❌ Drools / JVS-Rules（用 LiteFlow）
@@ -130,6 +139,80 @@ updated_at DATETIME
 □ SQL 文件头有 SET NAMES utf8mb4？
 □ 权限编码用 edit 不用 update？与 ins_permission 表一致？
 □ 需要更新文档？
+```
+
+## 测试执行前置条件（强制）
+
+```
+1. 编译整个项目：mvn clean install -DskipTests（多模块项目必须全量编译）
+2. 重启整个服务：停止后端 Java 进程，重新启动 java -jar covex-web-1.0.0-SNAPSHOT.jar
+3. 确认前端已启动：npm run dev（端口 3000）
+4. 确认后端已启动：访问 http://localhost:8080/swagger-ui/index.html 返回 200
+
+禁止：在未重启服务的情况下执行测试（旧进程可能加载旧代码，导致测试结果不可信）
+```
+
+## 测试 Agent API 调用规范（强制）
+
+**核心原则：所有 API 调用必须以 OpenAPI 规范为唯一权威源，禁止凭记忆或 REST 惯例猜测。**
+
+### 前置步骤（每次 API 测试前必须执行）
+
+测试前先获取完整 API 规范，再发起实际测试请求：
+
+```
+步骤 1：获取 OpenAPI 规范（一次请求拿全部）
+  方式 A（浏览器 Agent）：通过 evaluate_script 执行
+    const res = await fetch('http://localhost:8080/v3/api-docs');
+    const spec = await res.json();
+  方式 B（终端/脚本 Agent）：通过 curl 或 Invoke-RestMethod 执行
+    GET http://localhost:8080/v3/api-docs
+  返回 JSON 包含所有接口路径、方法、请求体 Schema、响应结构
+
+步骤 2：从规范中提取目标接口信息
+  在 spec.paths 中查找目标接口，确认：
+  - 精确路径（如 /api/payment/create，而非 /api/payment）
+  - HTTP 方法（POST/PUT/GET/DELETE）
+  - Request Body Schema 字段名（如 templateCode，而非 templateId）
+  - 路径参数名（如 {proposalId}，而非 {id}）
+  - 响应结构（code/data/message）
+
+步骤 3：用确认的信息发起实际测试请求
+
+步骤 4：如果 /v3/api-docs 不可用，退化为读取 Controller 源码：
+  在 covex-web/src/main/java/com/covex/web/controller/ 目录下
+  找到对应 Controller，读取 @RequestMapping + @PostMapping 等注解
+```
+
+> **为什么用 /v3/api-docs 而不用浏览器点开 Swagger UI？**
+> - 一次 HTTP 请求获取全部接口规范（~120KB JSON），比逐页点开 Swagger UI 省 Token
+> - 结构化 JSON 便于程序化提取目标接口，无需视觉识别
+> - 浏览器 Agent 可通过 evaluate_script 执行 fetch，终端 Agent 可直接 curl/Invoke-RestMethod
+
+### 禁止行为
+
+- ❌ **禁止猜测接口路径**：不能假设 REST 惯例（如 `POST /api/payment`），实际可能是 `POST /api/payment/create`
+- ❌ **禁止猜测字段名**：不能假设 `templateId`/`id`/`name` 等常见命名，必须从 OpenAPI Schema 确认
+- ❌ **禁止猜测枚举值**：状态码、类型码必须从字典表或枚举定义确认，不能假设从 0 或 1 开始
+- ❌ **禁止使用过时的记忆**：上一次会话的接口信息可能已变更，每次必须重新从 /v3/api-docs 读取
+
+### 已知的非标准接口（易踩坑）
+
+| 接口 | 正确路径/字段 | 常见错误 |
+|------|-------------|----------|
+| 模板创建产品 | `POST /api/product-template/create-product`，body: `{"templateCode":"TERM_LIFE",...}` | ~~`templateId: 1`~~ |
+| 核保审批 | `POST /api/underwriting/manual/{proposalId}` | ~~`PUT /api/underwriting/{id}/approve`~~ |
+| 创建支付 | `POST /api/payment/create` | ~~`POST /api/payment`~~ |
+| 用户登录 | `POST /api/user/login` | ~~`POST /api/auth/login`~~ |
+
+### 测试执行检查清单
+
+```
+执行每个 API 测试前：
+□ 是否已从 /v3/api-docs 确认了接口路径？
+□ 是否已确认请求体的所有字段名与 OpenAPI Schema 一致？
+□ 是否已确认路径参数名和方法正确？
+□ 如果是非标准路径，是否在测试计划中显式标注了？
 ```
 
 ## 问题排查三步法（强制）

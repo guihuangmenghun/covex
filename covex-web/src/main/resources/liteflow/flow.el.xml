@@ -17,7 +17,7 @@
 
     <!-- 理赔校验链：按顺序执行 -->
     <chain name="claimValidateChain">
-        THEN(claimValidatePolicy, claimValidateCoverage, claimValidateWaitingPeriod, claimValidateCoverageMatch);
+        THEN(claimValidatePolicy, claimValidateCoverage, claimValidateWaitingPeriod, claimValidateCoverageMatch, claimSharedAmount);
     </chain>
 
     <!-- 理赔赔付计算链 -->

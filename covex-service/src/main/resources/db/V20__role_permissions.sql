@@ -47,8 +47,8 @@ AND p.permission_code IN (
     'finance:read', 'finance:settle',
     -- 合规管理（R）
     'compliance:read',
-    -- 系统管理（R + 角色 RW）
-    'user:read',
+    -- 系统管理（RW + 角色 RW）
+    'user:read', 'user:edit', 'user:assign_role',
     'role:read', 'role:edit', 'role:assign_perm'
 );
 

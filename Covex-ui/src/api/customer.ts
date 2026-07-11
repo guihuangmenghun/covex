@@ -27,6 +27,10 @@ export function ensureInsured(id: number) {
   return request.post<any, Result<void>>(`/customer/${id}/ensure-insured`)
 }
 
+export function getHealth(id: number) {
+  return request.get<any, Result<Record<string, any>>>(`/customer/${id}/health`)
+}
+
 export function updateHealth(id: number, data: Record<string, any>) {
   return request.put<any, Result<void>>(`/customer/${id}/health`, data)
 }

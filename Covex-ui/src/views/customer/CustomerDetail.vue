@@ -247,7 +247,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import {
-  getCustomerById, updateCustomer, ensureApplicant, ensureInsured, updateHealth,
+  getCustomerById, updateCustomer, ensureApplicant, ensureInsured, getHealth, updateHealth,
   createAddress, getAddressList, updateAddress, deleteAddress, setDefaultAddress,
   createBankAccount, getBankAccountList, updateBankAccount, deleteBankAccount, setDefaultBankAccount,
 } from '@/api/customer'
@@ -529,6 +529,17 @@ const healthForm = reactive({
   currentMedications: [] as { drugName: string; dosage: string; frequency: string; startDate: string }[],
 })
 
+async function loadHealth() {
+  try {
+    const res = await getHealth(customerId.value)
+    if (res.data) {
+      healthForm.medicalHistory = Array.isArray(res.data.medicalHistory) ? res.data.medicalHistory : []
+      healthForm.familyHistory = Array.isArray(res.data.familyHistory) ? res.data.familyHistory : []
+      healthForm.currentMedications = Array.isArray(res.data.currentMedications) ? res.data.currentMedications : []
+    }
+  } catch { /* 无健康档案数据时静默失败 */ }
+}
+
 async function handleSaveHealth() {
   healthLoading.value = true
   try {
@@ -547,6 +558,7 @@ async function handleSaveHealth() {
 function handleTabChange(tab: string) {
   if (tab === 'address' && addresses.value.length === 0) loadAddresses()
   if (tab === 'bank' && bankAccounts.value.length === 0) loadBankAccounts()
+  if (tab === 'health') loadHealth()
 }
 
 // ====== 初始化 ======
