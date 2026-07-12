@@ -14,17 +14,18 @@
 
 | 文档 | 路径 | 用途 |
 |---|---|---|
-| 技术栈总表 | `docs/Covex技术栈总表.md` | 18 个组件的版本、用途、Covex 场景 |
-| 数据模型（产品配置域） | `docs/Covex数据模型-产品配置域.md` | 11 张产品配置表详细字段定义 |
-| 运营域需求规格 | `docs/Covex运营域需求规格.md` | 用户故事、状态机、端到端流程、异常处理 |
-| 数据模型（运营域） | `docs/Covex数据模型-运营域.md` | 运营域 29 张表字段定义、类型、索引、实体关系 |
-| 业务流程框架 | `docs/Covex业务流程框架.md` | 6 阶段业务全景 + 11 个角色 |
-| 开发计划 | `docs/Covex开发计划.md` | 14 个 Story 开发顺序和任务拆解（纯开发，不含测试） |
-| 测试计划 | `docs/Covex测试计划.md` | 11 个测试 Story（对应原始 S1-S15 开发计划） |
-| 补充计划 | `docs/Covex补充计划20260706.md` | P0~P3 补充任务（Bug修复+模板工厂+权限+审批+架构优化） |
-| 补充测试计划 | `docs/Covex补充测试计划20260708.md` | TS0~TS3 补充测试（对应补充计划，由独立测试 Agent 执行） |
-| ER 图 | `docs/Covex_ER_Diagram.mermaid` | 40 张表关系图 |
-| 枚举值方案 | `docs/枚举值重构方案.md` | 39 组字典预置数据 |
+| 技术栈总表 | `docs/4-reference/Covex技术栈总表.md` | 18 个组件的版本、用途、Covex 场景 |
+| 数据模型（产品配置域） | `docs/4-reference/Covex数据模型-产品配置域.md` | 11 张产品配置表详细字段定义 |
+| 运营域需求规格 | `docs/1-specs/operations/Covex运营域需求规格.md` | 用户故事、状态机、端到端流程、异常处理 |
+| 数据模型（运营域） | `docs/4-reference/Covex数据模型-运营域.md` | 运营域 29 张表字段定义、类型、索引、实体关系 |
+| 业务流程框架 | `docs/4-reference/Covex业务流程框架.md` | 6 阶段业务全景 + 11 个角色 |
+| 开发计划 | `docs/3-delivery/20260705/Covex开发计划.md` | 14 个 Story 开发顺序和任务拆解（纯开发，不含测试） |
+| 测试计划 | `docs/3-delivery/20260705/Covex测试计划.md` | 11 个测试 Story（对应原始 S1-S15 开发计划） |
+| 补充计划 | `docs/3-delivery/20260708/Covex补充计划20260706.md` | P0~P3 补充任务（Bug修复+模板工厂+权限+审批+架构优化） |
+| 补充测试计划 | `docs/3-delivery/20260708/Covex补充测试计划20260708.md` | TS0~TS3 补充测试（对应补充计划，由独立测试 Agent 执行） |
+| ER 图 | `docs/4-reference/Covex_ER_Diagram.mermaid` | 40 张表关系图 |
+| 枚举值方案 | `docs/2-design/data-model/枚举值重构方案.md` | 39 组字典预置数据 |
+| 项目枚举值 | `docs/2-design/data-model/项目枚举值.md` | 全量枚举定义（从 ins_dict 表拉取，39 组 175 条） |
 
 ## 不可变约束（编码时必须遵守）
 
