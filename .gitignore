@@ -56,3 +56,7 @@ shutdown.ps1
 
 # === Qoder CN ===
 .qoder/
+
+# 面试文档（个人使用，不纳入版本控制）
+docs/面试技术名词解释与话术.docx
+docs/~$*
